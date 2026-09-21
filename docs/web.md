@@ -6,24 +6,29 @@
 
 ---
 
-
 ## 環境準備（若PC Room測試成功，可略過）
 
-* 以下項目需要**管理員權限**，請在課程開始前完成。學生端的所有步驟都在Users權限下可完成。
-* 建議學生準備好Win11或Ubuntu，可用電腦教室遠端桌面連線，課程掌控度更高。
+- 以下項目需要**管理員權限**，請在課程開始前完成。學生端的所有步驟都在Users權限下可完成。
+- 建議學生準備好Win11或Ubuntu，可用電腦教室遠端桌面連線，課程掌控度更高。
 
 ### 電腦教室預裝軟體
 
-| 軟體 | 版本 | 安裝方式 | 備註 |
-|---|---|---|---|
-| VSCode | 最新 | System Installer | 需admin |
-| Git for Windows | 2.4x | 預設安裝 | 含Git Credential Manager |
-| Node.js LTS | 22.x | MSI，選「Add to PATH」 | 需admin |
-| Google Chrome / Edge | 最新 | — | 用於開發者工具 |
+
+| 軟體                   | 版本   | 安裝方式               | 備註                      |
+| -------------------- | ---- | ------------------ | ----------------------- |
+| VSCode               | 最新   | System Installer   | 需admin                  |
+| Git for Windows      | 2.4x | 預設安裝               | 含Git Credential Manager |
+| Node.js LTS          | 22.x | MSI，選「Add to PATH」 | 需admin                  |
+| Google Chrome / Edge | 最新   | —                  | 用於開發者工具                 |
+
 
 > **若無法預裝Node.js**：學生可用Users權限自行安裝（見「Plan B」），但會多花15分鐘。建議還是預裝。
 
+
+
 # W01環境與Git
+
+
 
 ## 架構說明
 
@@ -41,18 +46,24 @@
                           └────────────┘            └────────────┘
 ```
 
-| 工具 | 它做什麼 | 沒有它會怎樣 |
-|---|---|---|
-| VSCode | 寫程式、看錯誤、跑終端機 | 用記事本寫也行，但你會很痛苦 |
+
+| 工具      | 它做什麼                | 沒有它會怎樣            |
+| ------- | ------------------- | ----------------- |
+| VSCode  | 寫程式、看錯誤、跑終端機        | 用記事本寫也行，但你會很痛苦    |
 | Node.js | 讓JavaScript能在瀏覽器外執行 | 無法使用Vite、npm等現代工具 |
-| Git | 記錄每次修改，可以回到過去 | 改壞了就回不去了 |
-| GitHub | 把Git歷史備份到雲端 | 電腦壞了作業就沒了 |
+| Git     | 記錄每次修改，可以回到過去       | 改壞了就回不去了          |
+| GitHub  | 把Git歷史備份到雲端         | 電腦壞了作業就沒了         |
+
+
+
 
 ## 動手做
 
+
+
 ### 1.1 確認環境
 
-開啟VSCode → 上方選單 `Terminal` → `New Terminal`（或按 `` Ctrl+` ``）
+開啟VSCode → 上方選單 `Terminal` → `New Terminal`（或按 `Ctrl+``）
 
 終端機視窗會出現在下方。輸入：
 
@@ -63,6 +74,7 @@ git --version
 ```
 
 **預期輸出**（版本號可能略有不同）：
+
 ```
 v22.14.0
 10.9.2
@@ -102,6 +114,8 @@ $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
 > zip解壓到你自己的`AppData\Local`，那是你的個人空間，完全不需要特殊權限。
 > **理解權限邊界在哪，比記住指令更重要。**
 
+
+
 ### 1.3 設定Git身分
 
 ```powershell
@@ -114,6 +128,8 @@ git config --global --list
 
 > Git用這組資料標記「是誰做了這次修改」，跟GitHub帳號無關但建議一致。
 
+
+
 ### 1.4 建立專案資料夾
 
 ```powershell
@@ -125,12 +141,16 @@ code -r .
 
 > `code -r .` 的意思是「在目前視窗開啟這個資料夾」。
 
+
+
 ### 1.5 初始化Git
 
 ```powershell
 git init
 git branch -M main
 ```
+
+
 
 ### 1.6 先寫`.gitignore`（順序很重要）
 
@@ -159,14 +179,16 @@ Thumbs.db
 npm-debug.log*
 ```
 
-> **⚠️ 為什麼要先寫`.gitignore`再寫程式？**
+> **⚠️ 為什麼要先寫**`.gitignore`**再寫程式？**
 >
 > `node_modules`動輒上萬個檔案、數百MB。一旦不小心commit進去，
 > 它**永遠留在git歷史裡**——就算之後刪掉，repo體積也回不去了。
 >
-> **規則：`.gitignore`永遠是專案的第一個檔案。**
+> **規則：**`.gitignore`**永遠是專案的第一個檔案。**
 
-### 1.7 建立README.md
+
+
+### 1.7 [建立README.md](http://建立README.md)
 
 ```markdown
 # WebUI Lab
@@ -176,6 +198,8 @@ Web Programming課程實作專案。
 ## 學號
 B11012345
 ```
+
+
 
 ### 建立index.html
 
@@ -188,9 +212,9 @@ Ctrl + ~ 在VSCode叫出terminal (default: powershell)
 npx.cmd http-server . -p 7777 -a 0.0.0.0
 ```
 
-http://127.0.0.1:7777/
+[http://127.0.0.1:7777/](http://127.0.0.1:7777/)
 
-http://<ip>:7777/
+http://:7777/
 
 ### 1.8 第一次commit
 
@@ -198,10 +222,16 @@ http://<ip>:7777/
 git add .gitignore README.md index.html
 git commit -m "0: initialize project"
 ```
-#### git add all files 
+
+
+
+#### git add all files
+
 ```powershell
 git add .
 ```
+
+
 
 ### 1.9 推上GitHub
 
@@ -221,17 +251,21 @@ git push -u origin main
 
 ## ✅ W01檢查點
 
-- [ ] `node --version`、`npm --version`、`git --version`都有輸出
-- [ ] 專案資料夾建在`code`下，VSCode能開啟
-- [ ] `.gitignore`是第一個建立的檔案
-- [ ] `git log --oneline`看得到你的第一個commit
-- [ ] GitHub上看得到你的repo與README
+- [x] `node --version`、`npm --version`、`git --version`都有輸出
+- [x] 專案資料夾建在`code`下，VSCode能開啟
+- [x] `.gitignore`是第一個建立的檔案
+- [x] `git log --oneline`看得到你的第一個commit
+- [x] GitHub上看得到你的repo與README
+
+
 
 ## 🎯 延伸練習
 
 1. 用`git log --oneline --graph`觀察歷史
 2. 故意修改README，用`git diff`看差異，再commit
 3. 查一下：`git add .` 跟 `git add -A` 有什麼差別？
+
+
 
 ## 🤝 這週怎麼問AI
 
@@ -245,15 +279,14 @@ git push -u origin main
 **差別在哪**：第二種問法你會學到「權限模型」這個概念，第一種你只會拿到一串複製貼上的指令。
 
 ## 心得
+
 - 了解github開發環境與社群運作概念
 - AI coding建立基礎專案：create a basic web ui repo so that I can push to github later. start from index.html and README.md with .gitignore for web app.
-- 不須強記git commands，AI可協助： commit "W01: Basic Web UI" and push to https://github.com/<user>/webui.git
-```
-python -m venv venv
-venv\Scripts\activate
-deactivate
-```
+- 不須強記git commands，AI可協助： commit "W01: Basic Web UI" and push to [https://github.com/](https://github.com/)/webui.git
+
 ---
+
+
 
 # W02 — Web UI and HTML
 
@@ -261,29 +294,38 @@ deactivate
 
 > Prompt: 
 > Use open webui style (like chatgpt) to redesign my web framework. Use the simplest HTML and CSS so that I can understand easily.
-> 
+>
 > Prompt: 
 > Split css from html and store in ./css so that I can keep each code file concise.
 
+
+
 ## Topics: semantic HTML tags
+
 > 了解以下tags用法
+
+
 
 ### index.html 使用的語意化標籤
 
-| 標籤 | 位置 | 初學者理解 |
-|---|---|---|
-| `<aside>` | [index.html](index.html#L11) | 主要內容旁邊的輔助內容，例如側邊欄。 |
-| `<main>` | [index.html](index.html#L31) | 頁面的主要內容，一個頁面通常只使用一次。 |
-| `<header>` | [index.html](index.html#L32) | 頁面或區塊的頂部內容，例如標題或選單。 |
-| `<section>` | [index.html](index.html#L38) | 一個有主題的內容區塊，這裡是聊天區域。 |
-| `<h1>` | [index.html](index.html#L40) | 頁面最重要的標題。 |
-| `<p>` | [index.html](index.html#L41) | 一段文字或說明。 |
-| `<form>` | [index.html](index.html#L61) | 使用者輸入資料的表單。 |
-| `<textarea>` | [index.html](index.html#L62) | 可以輸入多行文字的欄位。 |
-| `<button>` | [index.html](index.html#L13) | 可以操作的按鈕，例如新增聊天或送出訊息。 |
-| `<a>` | [index.html](index.html#L21-L23) | 超連結，用來前往其他位置或頁面。 |
-| `<strong>` | [index.html](index.html#L27) | 表示重要文字，通常會以粗體顯示。 |
-| `<small>` | [index.html](index.html#L27) | 表示較次要或補充性的文字。 |
+
+| 標籤           | 位置                               | 初學者理解                |
+| ------------ | -------------------------------- | -------------------- |
+| `<aside>`    | [index.html](index.html#L11)     | 主要內容旁邊的輔助內容，例如側邊欄。   |
+| `<main>`     | [index.html](index.html#L31)     | 頁面的主要內容，一個頁面通常只使用一次。 |
+| `<header>`   | [index.html](index.html#L32)     | 頁面或區塊的頂部內容，例如標題或選單。  |
+| `<section>`  | [index.html](index.html#L38)     | 一個有主題的內容區塊，這裡是聊天區域。  |
+| `<h1>`       | [index.html](index.html#L40)     | 頁面最重要的標題。            |
+| `<p>`        | [index.html](index.html#L41)     | 一段文字或說明。             |
+| `<form>`     | [index.html](index.html#L61)     | 使用者輸入資料的表單。          |
+| `<textarea>` | [index.html](index.html#L62)     | 可以輸入多行文字的欄位。         |
+| `<button>`   | [index.html](index.html#L13)     | 可以操作的按鈕，例如新增聊天或送出訊息。 |
+| `<a>`        | [index.html](index.html#L21-L23) | 超連結，用來前往其他位置或頁面。     |
+| `<strong>`   | [index.html](index.html#L27)     | 表示重要文字，通常會以粗體顯示。     |
+| `<small>`    | [index.html](index.html#L27)     | 表示較次要或補充性的文字。        |
+
+
+
 
 ### 沒有特殊語意的標籤
 
@@ -297,6 +339,7 @@ deactivate
 語意化標籤可以讓瀏覽器、搜尋引擎和螢幕閱讀器理解每個區域的用途。
 
 例如：
+
 - `<main>` 表示主要內容。
 - `<aside>` 表示側邊內容。
 - `<nav>` 表示導覽。
@@ -308,29 +351,35 @@ deactivate
 ### Project Milestone
 
 #### Problem
-我要解決什麼問題？
+居家難量化扁平足、矯正動作易做錯甚至受傷
 
 #### Target Users
-誰會使用？
+兒少家長、具足弓塌陷病識感的患者、業餘跑者等想在家初步了解與正確訓練的人
 
 #### Core Features
-- 
-- 
-- 
+- 靜態足印評估
+- 提踵即時回饋
+- 歷史追蹤
 
 #### Data
-需要哪些資料？
+- 足底濕印照片
+- 運動影片
+- 運動照片、影片、文字說明
 
 #### External API
-是否需要API？
+需要（後期）。本階段前端先靜態示意；之後由 FastAPI 提供例如：上傳足印與評估結果、運動紀錄讀寫、（更後）動作角度分析。可沿用現有 `/api/` 前綴。
 
 #### Security / Privacy
-可能有哪些風險？
+- 足部影像屬個人健康相關資料，不可任意公開或 commit 到 GitHub
+- 僅供居家參考，不能取代醫療診斷（頁面需免責）
+- 上傳與儲存需 HTTPS、權限控管；密碼／金鑰不進前端與 Git
+- 避免用 innerHTML 顯示使用者內容（防 XSS）；API 需驗證與授權（後期）
 
 #### MVP
-如果只剩4週，我最少要完成哪些功能？
+能走完「上傳足印→看分級→看運動指引」的前端流程；計算與即時影像可後半再接
 
 ## W02 Learning Log
+
 
 
 ### AI Concept Question
@@ -347,4 +396,312 @@ deactivate
 用實際網頁例子解釋。
 ```
 
+`<div>` 只是「盒子」，**沒有意義**。語意標籤告訴瀏覽器／輔助工具／搜尋引擎「這區是什麼」。
+
+用「足弓小幫手」舉例：
+
+| 標籤 | 意思 | 在你們網站 |
+|---|---|---|
+| `<div>` | 無語意容器 | 可用來排版，但不該取代整頁結構 |
+| `<main>` | 這一頁的主要內容 | 各頁中間那塊評估／運動內容 |
+| `<nav>` | 導覽 | 底部「總覽／掃描／運動…」 |
+| `<section>` | 有主題的一大區 | 「歷史追蹤」「提踵練習」這類大區塊 |
+| `<article>` | 可獨立理解的一塊 | 「評估結果」卡片、「教學第 1 點」 |
+
+**為什麼重要？**  
+- 螢幕閱讀器可靠 `nav` / `main` 跳轉，不會在一堆 div 裡迷路  
+- 你自己維護時，看 HTML 就知道哪裡是選單、哪裡是正文  
+- SEO／結構較清楚  
+
+**正確用法：** 能語意就用語意；真的只是排版、沒有名字的包裹，再用 `<div>`。
 ---
+
+# W03 — 從本機開發到公開部署
+
+> **階段**：學生已完成網站demo，「**讓作品上線、公開存取**」
+> **目標**：支援https，以便公開服務，或支援Line bot
+
+---
+
+## 📋 大綱
+
+| 階段 | 內容 | 時間估計 |
+|------|------|----------|
+| Part 1 | ASGI 概念 & uvicorn 啟動靜態網站 | ~25 min |
+| Part 2 | IIS URL Rewrite 反向代理設定 | ~20 min |
+| Part 3 | 學生實作 & 驗收 | ~15 min |
+
+---
+
+## Part 1：用 uvicorn 啟動你的靜態網站
+
+### 1.1 什麼是 ASGI？
+
+| 比較項目 | WSGI (傳統) | ASGI (新一代) |
+|----------|-------------|---------------|
+| 全稱 | Web Server Gateway Interface | **Asynchronous** Server Gateway Interface |
+| 特性 | 同步、一個請求佔一個 thread | 非同步、支援高併發 |
+| 支援協定 | HTTP only | HTTP + **WebSocket** |
+| 代表框架 | Flask, Django (傳統) | FastAPI, Starlette, Django 4+ |
+
+> 💡 **白話說**：ASGI 就是 Python Web 應用程式與伺服器之間的「溝通規格」，uvicorn 是實作這個規格的高效能伺服器。
+
+### 1.2 為什麼選 uvicorn？
+
+- ⚡ 基於 `uvloop` + `httptools`，效能極佳
+- 🔄 支援 `--reload` 熱重載，開發超方便
+- 📦 安裝簡單，一行指令搞定
+- 🎯 搭配 FastAPI / Starlette 的 `StaticFiles`，直接服務 HTML/CSS/JS
+
+### 1.3 環境安裝
+
+```bash
+# 建議使用 pip（學生機已有 Python 3.10+）
+pip install fastapi uvicorn aiofiles
+```
+
+### 1.4 專案目錄結構
+
+假設學生的網站雛形放在 `site/` 資料夾中：
+
+```
+my_project/
+├── server.py # 進入點（啟動用）
+└── site/ # ← 學生的網站雛形（HTML5 + CSS3 + JS）
+├── index.html
+├── css/
+│ └── style.css
+├── js/
+│ └── app.js
+└── images/
+└── ...
+```
+
+### 1.5 撰寫 `server.py`（最精簡版本）
+
+```python
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+
+app = FastAPI()
+
+# 關鍵：html=True 讓它自動找 index.html
+app.mount("/", StaticFiles(directory="site", html=True), name="site")
+```
+
+> ✅ `html=True` 的效果：
+> - 訪問 `/` → 自動回傳 `site/index.html`
+> - 訪問 `/about` → 自動回傳 `site/about.html`
+> - 不用為每個頁面手動寫路由！
+
+### 1.6 啟動伺服器
+
+```bash
+# 開發模式（含熱重載）
+uvicorn server:app --reload --host 0.0.0.0 --port 7777
+```
+
+| 參數 | 說明 |
+|------|------|
+| `server:app` | `server.py` 檔案中的 `app` 物件 |
+| `--reload` | 程式碼修改後自動重啟（開發用） |
+| `--host 0.0.0.0` | ⚠️ 綁定所有網路介面，讓外部可連入 |
+| `--port 7777` | 指定 port 為 **7777** |
+
+### 1.7 驗證
+
+啟動後，學生可以在瀏覽器打開：
+
+```
+http://localhost:7777/
+```
+
+看到自己的網站就代表成功 🎉
+
+> ⚠️ 此時其他人可以透過 `http://<你的IP>:7777/` 存取，但這是 **HTTP** 且 port 不標準，不適合公開展示。
+
+---
+
+## Part 2：IIS URL Rewrite — 反向代理讓作品公開上線
+
+### 2.1 目標架構
+
+```
+┌──────────────────────────────────┐
+│ IIS (Windows Server) │
+使用者瀏覽器 │ HTTPS :443 (SSL 憑證) │
+│ │ │
+│ HTTPS 請求 │ URL Rewrite Rules: │
+▼ │ │
+https://demo…/A11234567 │ /A11234567/* → http://IP:7777/ │
+│ /B22345678/* → http://IP:7777/ │
+│ /C33456789/* → http://IP:7777/ │
+│ ... │
+└──────────┬───────────────────────┘
+│ HTTP (內部反向代理)
+▼
+┌──────────────────────┐
+│ 學生的 uvicorn :7777 │
+│ (各自的電腦/VM) │
+└──────────────────────┘
+```
+
+**效果**：
+- 對外：`https://demo…/<student_no>` （HTTPS、好記、專業）
+- 對內：`http://<student_IP>:7777/` （uvicorn 原始服務）
+
+### 2.2 IIS 必要模組（老師已在伺服器安裝）
+
+| 模組 | 用途 |
+|------|------|
+| **URL Rewrite Module 2.0+** | URL 規則比對與重寫 |
+| **Application Request Routing (ARR) 3.0+** | 反向代理轉發能力 |
+| **SSL 憑證** | 提供 HTTPS 加密連線 |
+
+### 2.3 啟用 ARR Proxy（伺服器層級，只需做一次。老師已在伺服器安裝）
+
+1. 開啟 **IIS Manager**
+2. 點擊最上層 **Server 節點**
+3. 雙擊 **Application Request Routing Cache**
+4. 右側 Actions → **Server Proxy Settings**
+5. ✅ 勾選 **Enable proxy**
+6. 套用 (Apply)
+
+### 2.4 URL Rewrite 規則設定
+
+在 IIS 網站根目錄的 `web.config` 中加入規則：參考 `web03_iis_url_rewrite_uvicorn.md`
+
+### 2.5 批次產生規則（Python 輔助腳本）
+
+如果學生人數多，可用腳本自動產生：
+
+```python
+# generate_rules.py
+students = {
+"A11234567": "192.168.x.101",
+"B22345678": "192.168.x.102",
+"C33456789": "192.168.x.103",
+# ... 從名單匯入
+}
+
+for sid, ip in students.items():
+print(f'''
+<rule name="Student_{sid}" stopProcessing="true">
+<match url="^{sid}(/.*)?$" />
+<action type="Rewrite" url="http://{ip}:7777/{{R:1}}" />
+</rule>''')
+```
+
+```bash
+python generate_rules.py > rules_fragment.xml
+# 再貼入 web.config 的 <rules> 區塊內
+```
+
+### 2.6 HTTPS (SSL Offloading)
+
+```
+瀏覽器 ←── HTTPS (加密) ──→ IIS ←── HTTP (明文) ──→ uvicorn
+```
+
+- IIS 負責 SSL 終結（SSL Offloading / SSL Termination）
+- 內部轉發到 uvicorn 用 HTTP 即可，**不需要**學生自己處理憑證
+- 學生的作品自動享有 HTTPS 🔒
+
+---
+
+## Part 3：學生實作步驟 Checklist
+- 有修DBS課程學生，在上課使用FastAPI建立好Web Homepage和API服務，可以略過以下步驟。
+- 只有修Web Programming課程學生，可以直接執行：
+```powershell
+npx.cmd http-server . -p 7777 -a 0.0.0.0
+```
+
+### 若要用FastAPI架站，學生需要做的事（約 15 分鐘）
+
+- [ ] **Step 1**：確認 Python 環境，安裝套件
+```bash
+pip install fastapi uvicorn aiofiles
+```
+
+- [ ] **Step 2**：在專案根目錄建立 `server.py`
+```python
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+
+app = FastAPI()
+app.mount("/", StaticFiles(directory="web目錄", html=True), name="site")
+```
+
+- [ ] **Step 3**：啟動 uvicorn
+```bash
+uvicorn server:app --host 0.0.0.0 --port 7777
+```
+
+- [ ] **Step 4**：本機測試 → 開瀏覽器訪問 `http://localhost:7777/`
+
+- [ ] **Step 5**：回報 IP 給老師（老師設定 IIS 規則）
+
+- [ ] **Step 6**：公開測試 → 訪問 `https://demo…/<你的學號>`，確認作品上線 🎉
+
+### 老師需要做的事
+
+- [ ] 收集學生 IP 對照表（學號 ↔ IP）
+- [ ] 更新 IIS `web.config` 中的 Rewrite Rules
+- [ ] 確認 ARR Proxy 已啟用
+- [ ] 逐一或抽樣測試 `https://demo…/<student_no>`
+
+---
+
+## 🔧 常見問題排除
+
+### Q1：瀏覽器顯示 502 / 503 錯誤
+- ✅ 確認學生的 uvicorn 正在執行中
+- ✅ 確認 port 是 **7777** 沒打錯
+- ✅ 確認 `--host 0.0.0.0`（不是預設的 127.0.0.1）
+- ✅ 確認 Windows 防火牆允許 port 7777 的 inbound 連線
+
+### Q2：CSS / JS / 圖片載入失敗 (404)
+- ✅ 檢查 HTML 中的路徑是否為**相對路徑**
+```html
+<!-- ✅ 正確：相對路徑 -->
+<link rel="stylesheet" href="css/style.css">
+<script src="js/app.js"></script>
+
+<!-- ❌ 錯誤：絕對路徑會跑到根目錄 -->
+<link rel="stylesheet" href="/css/style.css">
+```
+- 💡 因為透過子目錄（`/<student_no>/`）存取，絕對路徑 `/css/...` 會指向 IIS 根目錄而非學生的 uvicorn
+
+### Q3：uvicorn 啟動後終端機關掉就斷了
+- 先不管，課堂上保持終端機開著即可
+- 進階：可用 `nohup` (Linux) 或 Windows 背景執行，但不在本節範圍
+
+### Q4：多個學生同一台電腦？
+- 各自使用不同 port（7777, 7778, 7779...）
+- IIS 規則也對應到各自的 port
+
+---
+
+## 📖 觀念小結
+
+| 你學到了什麼 | 對應的業界實務 |
+|-------------|---------------|
+| uvicorn 啟動靜態網站 | ASGI 伺服器部署 |
+| `--host 0.0.0.0` | 伺服器綁定與網路存取 |
+| IIS URL Rewrite | 反向代理 (Reverse Proxy) |
+| HTTPS via IIS | SSL Termination / Offloading |
+| 學號對應子路徑 | 多租戶架構 (Multi-tenancy) 概念 |
+
+> 🎓 **這就是你第一次把自己寫的網站「部署上線」的完整流程！**
+> 未來你可能會用 Nginx、Cloudflare、Docker、Kubernetes 做類似的事，但核心觀念都一樣：
+> **「寫好的東西 → 用伺服器跑起來 → 透過反向代理讓全世界看到」**
+
+---
+
+## 📚 延伸閱讀（有興趣自行探索）
+
+- [Uvicorn 官方文件](https://www.uvicorn.org/)
+- [FastAPI 靜態檔案](https://fastapi.tiangolo.com/tutorial/static-files/)
+- [IIS URL Rewrite Module](https://www.iis.net/downloads/microsoft/url-rewrite)
+- [Application Request Routing (ARR)](https://www.iis.net/downloads/microsoft/application-request-routing)
+

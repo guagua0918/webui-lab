@@ -1,6 +1,10 @@
 # 依賴套件 —— 這個資料夾會有上萬個檔案，絕不能進git
 node_modules/
 
+# 前端不需要 Python 虛擬環境（誤建時也不進 git）
+venv/
+.venv/
+
 # 建置產物
 dist/
 build/
