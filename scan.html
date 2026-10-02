@@ -21,19 +21,37 @@
 
     <main class="content">
       <h1 class="page-title">足印掃描</h1>
-      <p class="lead">上傳濕印／掃描照片（介面示意）</p>
+      <p class="lead">上傳足印照片，依提示點出兩段寬度。</p>
 
       <article class="card">
-        <h2>選擇圖片</h2>
-        <div class="upload-box">點此選擇或拍攝足印<br>（示意，尚無實際上傳）</div>
-        <a class="btn btn-primary" href="#result">開始分析（示意）</a>
+        <div id="picker">
+          <h2>選擇圖片</h2>
+          <label class="upload-box" for="photo-input">點此選擇或拍攝足印</label>
+        </div>
+        <input id="photo-input" class="file-input" type="file" accept="image/*">
+        <p id="step" class="step-banner">請先選擇一張足印照片。</p>
+        <div id="stage" class="scan-stage" hidden>
+          <img id="photo" alt="足印預覽">
+          <svg id="overlay"></svg>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="btn btn-ghost" id="undo" disabled>撤銷上一點</button>
+          <button type="button" class="btn btn-ghost" id="reset" disabled>重新標記</button>
+        </div>
+        <button type="button" class="btn btn-ghost" id="change-photo" hidden>換一張照片</button>
+        <ol class="list">
+          <li>綠色兩點：蹠骨頭最寬處的兩端（b）</li>
+          <li>紅色兩點：足弓最窄處的兩端（c）</li>
+        </ol>
       </article>
 
-      <article class="card" id="result">
-        <h2>評估結果（示意）</h2>
-        <div class="meta-row"><span>CSI</span><strong>0.42</strong></div>
-        <div class="meta-row"><span>分級</span><strong>輕度足弓塌陷</strong></div>
-        <p class="muted">足弓略偏低，建議搭配提踵練習並持續追蹤。</p>
+      <article class="card" id="result" hidden>
+        <h2>評估結果</h2>
+        <div class="meta-row"><span>b 蹠骨最寬</span><strong id="out-b">—</strong></div>
+        <div class="meta-row"><span>c 足弓最窄</span><strong id="out-c">—</strong></div>
+        <div class="meta-row"><span>CSI</span><strong id="out-csi">—</strong></div>
+        <div class="meta-row"><span>判定</span><strong id="out-grade">—</strong></div>
+        <p id="out-note" class="muted"></p>
         <a class="btn btn-primary" href="exercise.html">依建議前往運動</a>
         <a class="btn btn-ghost" href="guide.html">先看拍攝教學</a>
       </article>
@@ -47,5 +65,149 @@
       <a href="guide.html"><span class="icon">?</span>教學</a>
     </nav>
   </div>
+
+  <script>
+    const FLAT_THRESHOLD = 62.7;
+    const STEPS = [
+      "第 1 點（綠）：點蹠骨頭最寬處的一端",
+      "第 2 點（綠）：點蹠骨頭最寬處的另一端",
+      "第 3 點（紅）：點足弓最窄處的一端",
+      "第 4 點（紅）：點足弓最窄處的另一端",
+      "四點已完成。可撤銷或重新標記。"
+    ];
+
+    const picker = document.getElementById("picker");
+    const changeBtn = document.getElementById("change-photo");
+    const input = document.getElementById("photo-input");
+    const stepEl = document.getElementById("step");
+    const stage = document.getElementById("stage");
+    const photo = document.getElementById("photo");
+    const overlay = document.getElementById("overlay");
+    const undoBtn = document.getElementById("undo");
+    const resetBtn = document.getElementById("reset");
+    const resultCard = document.getElementById("result");
+    const outB = document.getElementById("out-b");
+    const outC = document.getElementById("out-c");
+    const outCsi = document.getElementById("out-csi");
+    const outGrade = document.getElementById("out-grade");
+    const outNote = document.getElementById("out-note");
+
+    const points = [];
+    let objectUrl = "";
+
+    function dist(a, b) {
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    }
+
+    function syncControls() {
+      const hasPhoto = Boolean(photo.getAttribute("src"));
+      undoBtn.disabled = points.length === 0;
+      resetBtn.disabled = !hasPhoto && points.length === 0;
+      picker.hidden = hasPhoto;
+      changeBtn.hidden = !hasPhoto;
+      stepEl.textContent = hasPhoto ? STEPS[Math.min(points.length, STEPS.length - 1)] : "請先選擇一張足印照片。";
+    }
+
+    function hideResult() {
+      resultCard.hidden = true;
+    }
+
+    function showResult() {
+      const widthB = dist(points[0], points[1]);
+      const widthC = dist(points[2], points[3]);
+      if (widthB < 1) {
+        stepEl.textContent = "前足兩點太近，請撤銷後重點。";
+        hideResult();
+        return;
+      }
+      const csi = (widthC / widthB) * 100;
+      const isFlat = csi > FLAT_THRESHOLD;
+      outB.textContent = widthB.toFixed(1) + " px";
+      outC.textContent = widthC.toFixed(1) + " px";
+      outCsi.textContent = csi.toFixed(1) + "%";
+      outGrade.textContent = isFlat ? "扁平足" : "未達扁平足門檻";
+      outNote.textContent = isFlat
+        ? "CSI 大於 62.7%，依此次標記判為扁平足。僅供居家參考。"
+        : "CSI 未大於 62.7%，依此次標記未判為扁平足。僅供居家參考。";
+      resultCard.hidden = false;
+    }
+
+    function render() {
+      const w = photo.naturalWidth || 1;
+      const h = photo.naturalHeight || 1;
+      overlay.setAttribute("viewBox", "0 0 " + w + " " + h);
+      overlay.innerHTML = "";
+
+      function line(a, b, color) {
+        const el = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        el.setAttribute("x1", a.x);
+        el.setAttribute("y1", a.y);
+        el.setAttribute("x2", b.x);
+        el.setAttribute("y2", b.y);
+        el.setAttribute("stroke", color);
+        el.setAttribute("stroke-width", Math.max(w, h) / 180);
+        el.setAttribute("stroke-linecap", "round");
+        overlay.appendChild(el);
+      }
+
+      if (points.length >= 2) line(points[0], points[1], "#1f8f3a");
+      if (points.length >= 4) line(points[2], points[3], "#d21f1f");
+
+      points.forEach(function (p, i) {
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", p.x);
+        circle.setAttribute("cy", p.y);
+        circle.setAttribute("r", Math.max(w, h) / 90);
+        circle.setAttribute("fill", i < 2 ? "#1f8f3a" : "#d21f1f");
+        circle.setAttribute("stroke", "#fff");
+        circle.setAttribute("stroke-width", Math.max(w, h) / 280);
+        overlay.appendChild(circle);
+      });
+
+      syncControls();
+      if (points.length === 4) showResult();
+      else hideResult();
+    }
+
+    input.addEventListener("change", function () {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      objectUrl = URL.createObjectURL(file);
+      points.length = 0;
+      hideResult();
+      photo.onload = function () {
+        stage.hidden = false;
+        render();
+      };
+      photo.src = objectUrl;
+    });
+
+    overlay.addEventListener("click", function (event) {
+      if (!photo.naturalWidth || points.length >= 4) return;
+      const rect = overlay.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * photo.naturalWidth;
+      const y = ((event.clientY - rect.top) / rect.height) * photo.naturalHeight;
+      points.push({ x: x, y: y });
+      render();
+    });
+
+    undoBtn.addEventListener("click", function () {
+      if (!points.length) return;
+      points.pop();
+      render();
+    });
+
+    resetBtn.addEventListener("click", function () {
+      points.length = 0;
+      render();
+    });
+
+    changeBtn.addEventListener("click", function () {
+      input.click();
+    });
+
+    syncControls();
+  </script>
 </body>
 </html>
