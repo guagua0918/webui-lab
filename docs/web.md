@@ -350,32 +350,47 @@ git push -u origin main
 
 ### Project Milestone
 
+
+
 #### Problem
+
 居家難量化扁平足、矯正動作易做錯甚至受傷
 
 #### Target Users
+
 兒少家長、具足弓塌陷病識感的患者、業餘跑者等想在家初步了解與正確訓練的人
 
 #### Core Features
+
 - 靜態足印評估
 - 提踵即時回饋
 - 歷史追蹤
 
+
+
 #### Data
+
 - 足底濕印照片
 - 運動影片
 - 運動照片、影片、文字說明
 
+
+
 #### External API
+
 需要（後期）。本階段前端先靜態示意；之後由 FastAPI 提供例如：上傳足印與評估結果、運動紀錄讀寫、（更後）動作角度分析。可沿用現有 `/api/` 前綴。
 
 #### Security / Privacy
+
 - 足部影像屬個人健康相關資料，不可任意公開或 commit 到 GitHub
 - 僅供居家參考，不能取代醫療診斷（頁面需免責）
 - 上傳與儲存需 HTTPS、權限控管；密碼／金鑰不進前端與 Git
 - 避免用 innerHTML 顯示使用者內容（防 XSS）；API 需驗證與授權（後期）
 
+
+
 #### MVP
+
 能走完「上傳足印→看分級→看運動指引」的前端流程；計算與即時影像可後半再接
 
 ## W02 Learning Log
@@ -400,21 +415,27 @@ git push -u origin main
 
 用「足弓小幫手」舉例：
 
-| 標籤 | 意思 | 在你們網站 |
-|---|---|---|
-| `<div>` | 無語意容器 | 可用來排版，但不該取代整頁結構 |
-| `<main>` | 這一頁的主要內容 | 各頁中間那塊評估／運動內容 |
-| `<nav>` | 導覽 | 底部「總覽／掃描／運動…」 |
-| `<section>` | 有主題的一大區 | 「歷史追蹤」「提踵練習」這類大區塊 |
+
+| 標籤          | 意思       | 在你們網站              |
+| ----------- | -------- | ------------------ |
+| `<div>`     | 無語意容器    | 可用來排版，但不該取代整頁結構    |
+| `<main>`    | 這一頁的主要內容 | 各頁中間那塊評估／運動內容      |
+| `<nav>`     | 導覽       | 底部「總覽／掃描／運動…」      |
+| `<section>` | 有主題的一大區  | 「歷史追蹤」「提踵練習」這類大區塊  |
 | `<article>` | 可獨立理解的一塊 | 「評估結果」卡片、「教學第 1 點」 |
 
+
 **為什麼重要？**  
+
 - 螢幕閱讀器可靠 `nav` / `main` 跳轉，不會在一堆 div 裡迷路  
 - 你自己維護時，看 HTML 就知道哪裡是選單、哪裡是正文  
-- SEO／結構較清楚  
+- SEO／結構較清楚
 
-**正確用法：** 能語意就用語意；真的只是排版、沒有名字的包裹，再用 `<div>`。
----
+
+
+## **正確用法：** 能語意就用語意；真的只是排版、沒有名字的包裹，再用 `<div>`。
+
+
 
 # W03 — 從本機開發到公開部署
 
@@ -423,28 +444,40 @@ git push -u origin main
 
 ---
 
+
+
 ## 📋 大綱
 
-| 階段 | 內容 | 時間估計 |
-|------|------|----------|
+
+| 階段     | 內容                       | 時間估計    |
+| ------ | ------------------------ | ------- |
 | Part 1 | ASGI 概念 & uvicorn 啟動靜態網站 | ~25 min |
-| Part 2 | IIS URL Rewrite 反向代理設定 | ~20 min |
-| Part 3 | 學生實作 & 驗收 | ~15 min |
+| Part 2 | IIS URL Rewrite 反向代理設定   | ~20 min |
+| Part 3 | 學生實作 & 驗收                | ~15 min |
+
 
 ---
 
+
+
 ## Part 1：用 uvicorn 啟動你的靜態網站
+
+
 
 ### 1.1 什麼是 ASGI？
 
-| 比較項目 | WSGI (傳統) | ASGI (新一代) |
-|----------|-------------|---------------|
-| 全稱 | Web Server Gateway Interface | **Asynchronous** Server Gateway Interface |
-| 特性 | 同步、一個請求佔一個 thread | 非同步、支援高併發 |
-| 支援協定 | HTTP only | HTTP + **WebSocket** |
-| 代表框架 | Flask, Django (傳統) | FastAPI, Starlette, Django 4+ |
+
+| 比較項目 | WSGI (傳統)                    | ASGI (新一代)                                |
+| ---- | ---------------------------- | ----------------------------------------- |
+| 全稱   | Web Server Gateway Interface | **Asynchronous** Server Gateway Interface |
+| 特性   | 同步、一個請求佔一個 thread            | 非同步、支援高併發                                 |
+| 支援協定 | HTTP only                    | HTTP + **WebSocket**                      |
+| 代表框架 | Flask, Django (傳統)           | FastAPI, Starlette, Django 4+             |
+
 
 > 💡 **白話說**：ASGI 就是 Python Web 應用程式與伺服器之間的「溝通規格」，uvicorn 是實作這個規格的高效能伺服器。
+
+
 
 ### 1.2 為什麼選 uvicorn？
 
@@ -453,12 +486,16 @@ git push -u origin main
 - 📦 安裝簡單，一行指令搞定
 - 🎯 搭配 FastAPI / Starlette 的 `StaticFiles`，直接服務 HTML/CSS/JS
 
+
+
 ### 1.3 環境安裝
 
 ```bash
 # 建議使用 pip（學生機已有 Python 3.10+）
 pip install fastapi uvicorn aiofiles
 ```
+
+
 
 ### 1.4 專案目錄結構
 
@@ -477,6 +514,8 @@ my_project/
 └── ...
 ```
 
+
+
 ### 1.5 撰寫 `server.py`（最精簡版本）
 
 ```python
@@ -490,9 +529,12 @@ app.mount("/", StaticFiles(directory="site", html=True), name="site")
 ```
 
 > ✅ `html=True` 的效果：
+>
 > - 訪問 `/` → 自動回傳 `site/index.html`
 > - 訪問 `/about` → 自動回傳 `site/about.html`
 > - 不用為每個頁面手動寫路由！
+
+
 
 ### 1.6 啟動伺服器
 
@@ -501,12 +543,16 @@ app.mount("/", StaticFiles(directory="site", html=True), name="site")
 uvicorn server:app --reload --host 0.0.0.0 --port 7777
 ```
 
-| 參數 | 說明 |
-|------|------|
-| `server:app` | `server.py` 檔案中的 `app` 物件 |
-| `--reload` | 程式碼修改後自動重啟（開發用） |
-| `--host 0.0.0.0` | ⚠️ 綁定所有網路介面，讓外部可連入 |
-| `--port 7777` | 指定 port 為 **7777** |
+
+| 參數               | 說明                        |
+| ---------------- | ------------------------- |
+| `server:app`     | `server.py` 檔案中的 `app` 物件 |
+| `--reload`       | 程式碼修改後自動重啟（開發用）           |
+| `--host 0.0.0.0` | ⚠️ 綁定所有網路介面，讓外部可連入        |
+| `--port 7777`    | 指定 port 為 **7777**        |
+
+
+
 
 ### 1.7 驗證
 
@@ -522,7 +568,11 @@ http://localhost:7777/
 
 ---
 
+
+
 ## Part 2：IIS URL Rewrite — 反向代理讓作品公開上線
+
+
 
 ### 2.1 目標架構
 
@@ -547,16 +597,23 @@ https://demo…/A11234567 │ /A11234567/* → http://IP:7777/ │
 ```
 
 **效果**：
+
 - 對外：`https://demo…/<student_no>` （HTTPS、好記、專業）
 - 對內：`http://<student_IP>:7777/` （uvicorn 原始服務）
 
+
+
 ### 2.2 IIS 必要模組（老師已在伺服器安裝）
 
-| 模組 | 用途 |
-|------|------|
-| **URL Rewrite Module 2.0+** | URL 規則比對與重寫 |
-| **Application Request Routing (ARR) 3.0+** | 反向代理轉發能力 |
-| **SSL 憑證** | 提供 HTTPS 加密連線 |
+
+| 模組                                         | 用途            |
+| ------------------------------------------ | ------------- |
+| **URL Rewrite Module 2.0+**                | URL 規則比對與重寫   |
+| **Application Request Routing (ARR) 3.0+** | 反向代理轉發能力      |
+| **SSL 憑證**                                 | 提供 HTTPS 加密連線 |
+
+
+
 
 ### 2.3 啟用 ARR Proxy（伺服器層級，只需做一次。老師已在伺服器安裝）
 
@@ -566,6 +623,8 @@ https://demo…/A11234567 │ /A11234567/* → http://IP:7777/ │
 4. 右側 Actions → **Server Proxy Settings**
 5. ✅ 勾選 **Enable proxy**
 6. 套用 (Apply)
+
+
 
 ### 2.4 URL Rewrite 規則設定
 
@@ -597,6 +656,8 @@ python generate_rules.py > rules_fragment.xml
 # 再貼入 web.config 的 <rules> 區塊內
 ```
 
+
+
 ### 2.6 HTTPS (SSL Offloading)
 
 ```
@@ -609,21 +670,29 @@ python generate_rules.py > rules_fragment.xml
 
 ---
 
+
+
 ## Part 3：學生實作步驟 Checklist
+
 - 有修DBS課程學生，在上課使用FastAPI建立好Web Homepage和API服務，可以略過以下步驟。
 - 只有修Web Programming課程學生，可以直接執行：
+
 ```powershell
 npx.cmd http-server . -p 7777 -a 0.0.0.0
 ```
 
+
+
 ### 若要用FastAPI架站，學生需要做的事（約 15 分鐘）
 
-- [ ] **Step 1**：確認 Python 環境，安裝套件
+- [x] **Step 1**：確認 Python 環境，安裝套件
+
 ```bash
 pip install fastapi uvicorn aiofiles
 ```
 
-- [ ] **Step 2**：在專案根目錄建立 `server.py`
+- [x] **Step 2**：在專案根目錄建立 `server.py`
+
 ```python
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -632,36 +701,48 @@ app = FastAPI()
 app.mount("/", StaticFiles(directory="web目錄", html=True), name="site")
 ```
 
-- [ ] **Step 3**：啟動 uvicorn
+- [x] **Step 3**：啟動 uvicorn
+
 ```bash
 uvicorn server:app --host 0.0.0.0 --port 7777
 ```
 
-- [ ] **Step 4**：本機測試 → 開瀏覽器訪問 `http://localhost:7777/`
+- [x] **Step 4**：本機測試 → 開瀏覽器訪問 `http://localhost:7777/`
 
-- [ ] **Step 5**：回報 IP 給老師（老師設定 IIS 規則）
+- [x] **Step 5**：回報 IP 給老師（老師設定 IIS 規則）
 
-- [ ] **Step 6**：公開測試 → 訪問 `https://demo…/<你的學號>`，確認作品上線 🎉
+- [x] **Step 6**：公開測試 → 訪問 `https://demo…/<你的學號>`，確認作品上線 🎉
+
+
 
 ### 老師需要做的事
 
-- [ ] 收集學生 IP 對照表（學號 ↔ IP）
-- [ ] 更新 IIS `web.config` 中的 Rewrite Rules
-- [ ] 確認 ARR Proxy 已啟用
-- [ ] 逐一或抽樣測試 `https://demo…/<student_no>`
+- [x] 收集學生 IP 對照表（學號 ↔ IP）
+- [x] 更新 IIS `web.config` 中的 Rewrite Rules
+- [x] 確認 ARR Proxy 已啟用
+- [x] 逐一或抽樣測試 `https://demo…/<student_no>`
 
 ---
 
+
+
 ## 🔧 常見問題排除
 
+
+
 ### Q1：瀏覽器顯示 502 / 503 錯誤
+
 - ✅ 確認學生的 uvicorn 正在執行中
 - ✅ 確認 port 是 **7777** 沒打錯
 - ✅ 確認 `--host 0.0.0.0`（不是預設的 127.0.0.1）
 - ✅ 確認 Windows 防火牆允許 port 7777 的 inbound 連線
 
+
+
 ### Q2：CSS / JS / 圖片載入失敗 (404)
+
 - ✅ 檢查 HTML 中的路徑是否為**相對路徑**
+
 ```html
 <!-- ✅ 正確：相對路徑 -->
 <link rel="stylesheet" href="css/style.css">
@@ -670,33 +751,46 @@ uvicorn server:app --host 0.0.0.0 --port 7777
 <!-- ❌ 錯誤：絕對路徑會跑到根目錄 -->
 <link rel="stylesheet" href="/css/style.css">
 ```
+
 - 💡 因為透過子目錄（`/<student_no>/`）存取，絕對路徑 `/css/...` 會指向 IIS 根目錄而非學生的 uvicorn
 
+
+
 ### Q3：uvicorn 啟動後終端機關掉就斷了
+
 - 先不管，課堂上保持終端機開著即可
 - 進階：可用 `nohup` (Linux) 或 Windows 背景執行，但不在本節範圍
 
+
+
 ### Q4：多個學生同一台電腦？
+
 - 各自使用不同 port（7777, 7778, 7779...）
 - IIS 規則也對應到各自的 port
 
 ---
 
+
+
 ## 📖 觀念小結
 
-| 你學到了什麼 | 對應的業界實務 |
-|-------------|---------------|
-| uvicorn 啟動靜態網站 | ASGI 伺服器部署 |
-| `--host 0.0.0.0` | 伺服器綁定與網路存取 |
-| IIS URL Rewrite | 反向代理 (Reverse Proxy) |
-| HTTPS via IIS | SSL Termination / Offloading |
-| 學號對應子路徑 | 多租戶架構 (Multi-tenancy) 概念 |
+
+| 你學到了什麼           | 對應的業界實務                      |
+| ---------------- | ---------------------------- |
+| uvicorn 啟動靜態網站   | ASGI 伺服器部署                   |
+| `--host 0.0.0.0` | 伺服器綁定與網路存取                   |
+| IIS URL Rewrite  | 反向代理 (Reverse Proxy)         |
+| HTTPS via IIS    | SSL Termination / Offloading |
+| 學號對應子路徑          | 多租戶架構 (Multi-tenancy) 概念     |
+
 
 > 🎓 **這就是你第一次把自己寫的網站「部署上線」的完整流程！**
 > 未來你可能會用 Nginx、Cloudflare、Docker、Kubernetes 做類似的事，但核心觀念都一樣：
 > **「寫好的東西 → 用伺服器跑起來 → 透過反向代理讓全世界看到」**
 
 ---
+
+
 
 ## 📚 延伸閱讀（有興趣自行探索）
 
@@ -705,3 +799,109 @@ uvicorn server:app --host 0.0.0.0 --port 7777
 - [IIS URL Rewrite Module](https://www.iis.net/downloads/microsoft/url-rewrite)
 - [Application Request Routing (ARR)](https://www.iis.net/downloads/microsoft/application-request-routing)
 
+
+
+# W04 — CSS版面與RWD
+
+> **課程定位**:Web Programming · 第4週 · 前端進化起點
+> **前情提要**:W01建好環境與Git,W02做出靜態頁面,W03部署上線
+> **本週完成後你會有**:一個在手機、平板、桌機都不跑版的UI,以及一套可重用的設計系統。但請遵循**mobile first**設計原則。
+
+---
+
+
+
+## This Week at a Glance
+
+
+| Phase  | Content                                       | Use case & scenario                                                                                                           |
+| ------ | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Part 1 | Box model, Flexbox, and Grid responsibilities | A product dashboard with a sidebar, top bar, and content cards; you need to decide which layout system controls each layer    |
+| Part 2 | CSS variables design system + dark mode       | A SaaS landing page or admin panel that must keep branding consistent across buttons, cards, backgrounds, and theme switching |
+| Part 3 | RWD breakpoints and responsive validation     | A web app used on phone, tablet, and desktop, where the layout must adapt without breaking reading flow or interaction        |
+
+
+---
+
+
+
+## Page Layout
+
+```text
+┌────────────────────────────────────────────────────────────────────────┐
+│ Header (full width, top layer)                                         │
+├────────────────────────────────────────────────────────────────────────┤
+│ ┌────────────────────┐ ┌──────────────────────────────────────────────┐│
+│ │ Sidebar            │ │ Main content area                            ││
+│ │ (navigation)       │ │ - content                                    ││
+│ │                    │ │ - cards                                      ││
+│ │                    │ │ - layout                                     ││
+│ └────────────────────┘ └──────────────────────────────────────────────┘│
+├────────────────────────────────────────────────────────────────────────┤
+│ Footer                                                                 │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+
+| Scenario                             | Use                                    | Why                                                                                                 |
+| ------------------------------------ | -------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Page structure (sidebar + main area) | **Grid**                               | Two-dimensional layout with fixed columns; `grid-template-columns: 260px 1fr` solves it in one line |
+| A row of buttons, icons, and text    | **Flex**                               | One-dimensional arrangement; alignment and spacing are very intuitive                               |
+| Card list wrapping automatically     | **Grid** with `auto-fill` + `minmax()` | Adapts without writing multiple media queries                                                       |
+| Fine-tuning element position         | `gap` / `position`                     | ⚠️ Avoid forcing layouts with `margin`                                                              |
+
+
+---
+
+
+
+## AI Coding
+
+> 遵循**mobile first**設計原則，手機、平板、桌機都不跑版。
+> 根據以上page layout與CSS學習項目，修改index與css，盡量結構清楚。例如可以多個 .css files負責不同區塊呈現。click互動行為可以規畫於./js/app.js或其他適合名稱的.js files。盡量保持index.html結構清楚簡單易懂。
+> Header (WKE教務系統，登入靠右)；Sidebar (讀取json\teacher_ops.json)；Main先設計模擬卡片對應Sidebar預設的dashboard內容，請於json/產生 .json file對應card呈現。原來open webui sample內容都可以清除。
+> 不須執行npx，我已經用fastapi架站，於 `https://demo.wke.csie.ncnu.edu.tw/s115999999/`可以測試
+
+
+
+### 問題
+
+> Sidebar由items對應功能列表並未出現。預設選在Sidebar::dashboard也沒有顯示內容範例於Main。後續都不須run npx，我已經用fastapi架站。
+
+使用  正確組合 FastAPI 路徑：
+/s115999999/json/teacher_ops.json
+/s115999999/json/dashboard_cards.json
+
+### FastAPI
+
+```
+app.mount(
+    "/",
+    HtmlCssOnlyStaticFiles(directory=public_directory, html=True),
+    name="public",
+)
+```
+
+> 擴大允許 ./js/*, ./json/*, *.svg
+
+```
+class HtmlCssOnlyStaticFiles(StaticFiles):
+    """只提供允許的前端靜態資源，拒絕其他公開檔案類型。
+
+    目錄本身仍會交給 Starlette 處理，這樣根目錄可以透過 html=True
+    找到 index.html；實際檔案則必須符合副檔名或目錄白名單。
+    """
+
+    allowed_extensions = {".css", ".html", ".svg"}
+    allowed_directories = {"js", "json"}
+
+```
+
+
+
+## 學習心得
+
+- 版面用max-width收成手機欄寬，電腦寬螢幕也沿用同一套，沒有另外做桌機版。
+- 大圖會把欄位撐破，圖片要限制在容器裡。
+- Chrome若快取舊的CSS，畫面會和新程式對不起來。
+- ```<input type="file">``` 設了 display: none，所以畫面上沒有「選擇檔案」。虛線框是 ```<label for="photo-input">```，點它會打開那個被藏起來的選檔元件。「換一張照片」則是在程式裡呼叫 input.click()。
