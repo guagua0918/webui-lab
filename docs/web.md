@@ -2337,3 +2337,100 @@ fetch 卻被 Browser 的 CORS 擋下來？」
 ```
 
 這就是 W05 到 W06 的銜接。
+## W05 AI Prompt 作業（老師格式 §33）
+
+選項：**E. 自己設計 interaction**（掃描結果點擊展開，非教務 Sidebar）
+
+### 1. 原始需求
+
+```text
+掃描頁算出結果後，點一下綠色區塊可展開／收合評估資訊（b／c／CSI／判定／說明）。
+這是手機 tap 互動，不用鍵盤 Esc。
+```
+
+### 2. 你給 AI 的 Prompt
+
+```text
+我要在目前 scan.html / js/scan.js 加入一個手機取向互動。
+
+Event：使用者 click / tap #result（評估結果卡）
+Function：新增 toggleResultDetail()
+DOM Change：
+1. 切換詳細區塊的 hidden（或顯示／隱藏）
+2. 同步給 #result 加上／移除 is-expanded
+3. 若點到卡內的 a.btn 連結，不要觸發展開／收合，讓連結正常跳頁
+Expected UI：
+- 四點完成後，先不要直接鋪開全部數值；可點開才看
+- 再點一次，詳細資訊展開／收合切換
+
+限制：
+1. 只改必要的 HTML／CSS／scan.js，不要整份重寫
+2. 不要改 FastAPI、不要加 fetch、不要做 Esc／鍵盤快捷鍵
+3. 修改後用 Event → Function → DOM Change 摘要
+```
+
+（實作後迭代：改為專用綠色按鈕 `#result-toggle`；詳情容器改為 `#result-detail`。）
+
+### 3. AI 修改內容
+
+主要改動：
+
+- `scan.html`：結果卡加入 `#result-toggle`、`#result-detail`（內含 out-b／out-c／out-csi／out-grade／out-note）
+- `js/scan.js`：
+  - `collapseResultDetail()` / `toggleResultDetail()`
+  - `showResult()` 算完數值後先 `collapseResultDetail()`，再顯示結果卡
+  - `resultToggle.addEventListener("click", …)`
+- `css/style.css`：`.result-hint` 做成明顯可點的綠色區塊；`#result.is-expanded` 樣式
+
+核心程式：
+
+```js
+function toggleResultDetail() {
+  const open = resultDetail.hidden;
+  resultDetail.hidden = !open;
+  resultCard.classList.toggle("is-expanded", open);
+  resultToggle.setAttribute("aria-expanded", open ? "true" : "false");
+  resultHintLabel.textContent = open
+    ? "點這裡收合評估資訊"
+    : "點這裡查看 b／c／CSI 與判定";
+}
+
+resultToggle.addEventListener("click", function () {
+  toggleResultDetail();
+});
+```
+
+### 4. 你自己的解釋
+
+```text
+Event：#result-toggle 的 click（手機上就是 tap）
+Function：toggleResultDetail()
+DOM：
+  - 切換 #result-detail.hidden
+  - #result 切換 is-expanded
+  - 更新 #result-hint-label 文字與 aria-expanded
+UI Result：點綠色區塊才看到評估數值；再點收合；「前往運動」連結仍可正常跳頁
+```
+
+### 5. 測試結果
+
+```text
+1. 尚未算出結果時 → 結果卡隱藏，無影響
+2. 四點完成後 → 看得到綠色「點這裡查看…」，數字預設收合
+3. 點綠色區塊 → 展開 b／c／CSI／判定／說明
+4. 再點一次 → 收合
+5. 點「依建議前往運動」「先看拍攝教學」→ 正常換頁
+6. 撤銷／重新標記後結果卡隱藏 → 再完成四點後互動仍正常
+```
+
+### 6. Git Commit
+
+```text
+Add tap-to-toggle scan result details
+```
+
+或中文：
+
+```text
+掃描結果支援點擊展開評估資訊
+```
