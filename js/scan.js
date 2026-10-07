@@ -20,6 +20,9 @@ const overlay = document.getElementById("overlay");
 const undoBtn = document.getElementById("undo");
 const resetBtn = document.getElementById("reset");
 const resultCard = document.getElementById("result");
+const resultToggle = document.getElementById("result-toggle");
+const resultHintLabel = document.getElementById("result-hint-label");
+const resultDetail = document.getElementById("result-detail");
 const outB = document.getElementById("out-b");
 const outC = document.getElementById("out-c");
 const outCsi = document.getElementById("out-csi");
@@ -44,7 +47,25 @@ function syncControls() {
     : "請先選擇一張足印照片。";
 }
 
+function collapseResultDetail() {
+  resultDetail.hidden = true;
+  resultCard.classList.remove("is-expanded");
+  resultToggle.setAttribute("aria-expanded", "false");
+  resultHintLabel.textContent = "點這裡查看 b／c／CSI 與判定";
+}
+
+function toggleResultDetail() {
+  const open = resultDetail.hidden;
+  resultDetail.hidden = !open;
+  resultCard.classList.toggle("is-expanded", open);
+  resultToggle.setAttribute("aria-expanded", open ? "true" : "false");
+  resultHintLabel.textContent = open
+    ? "點這裡收合評估資訊"
+    : "點這裡查看 b／c／CSI 與判定";
+}
+
 function hideResult() {
+  collapseResultDetail();
   resultCard.hidden = true;
 }
 
@@ -65,7 +86,9 @@ function showResult() {
   outNote.textContent = isFlat
     ? "CSI 大於 62.7%，依此次標記判為扁平足。僅供居家參考。"
     : "CSI 未大於 62.7%，依此次標記未判為扁平足。僅供居家參考。";
+  collapseResultDetail();
   resultCard.hidden = false;
+  stepEl.textContent = "四點完成。請點下方綠色區塊查看評估。";
 }
 
 function render() {
@@ -141,6 +164,10 @@ resetBtn.addEventListener("click", function () {
 
 changeBtn.addEventListener("click", function () {
   input.click();
+});
+
+resultToggle.addEventListener("click", function () {
+  toggleResultDetail();
 });
 
 syncControls();

@@ -47,11 +47,18 @@
 
       <article class="card" id="result" hidden>
         <h2>評估結果</h2>
-        <div class="meta-row"><span>b 蹠骨最寬</span><strong id="out-b">—</strong></div>
-        <div class="meta-row"><span>c 足弓最窄</span><strong id="out-c">—</strong></div>
-        <div class="meta-row"><span>CSI</span><strong id="out-csi">—</strong></div>
-        <div class="meta-row"><span>判定</span><strong id="out-grade">—</strong></div>
-        <p id="out-note" class="muted"></p>
+        <p class="result-lead">標記完成。請點下方區塊查看數值。</p>
+        <button type="button" id="result-toggle" class="result-hint" aria-expanded="false" aria-controls="result-detail">
+          <span id="result-hint-label">點這裡查看 b／c／CSI 與判定</span>
+          <span class="result-hint-icon" aria-hidden="true"></span>
+        </button>
+        <div id="result-detail" hidden>
+          <div class="meta-row"><span>b 蹠骨最寬</span><strong id="out-b">—</strong></div>
+          <div class="meta-row"><span>c 足弓最窄</span><strong id="out-c">—</strong></div>
+          <div class="meta-row"><span>CSI</span><strong id="out-csi">—</strong></div>
+          <div class="meta-row"><span>判定</span><strong id="out-grade">—</strong></div>
+          <p id="out-note" class="muted"></p>
+        </div>
         <a class="btn btn-primary" href="exercise.html">依建議前往運動</a>
         <a class="btn btn-ghost" href="guide.html">先看拍攝教學</a>
       </article>
