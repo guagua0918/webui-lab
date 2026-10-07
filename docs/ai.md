@@ -185,3 +185,71 @@ HTML 管結構與語意，CSS 管外觀。
 - 如果下次自己做，我會: 先問要動哪些檔、為何，確認完再改。
 
 ---
+# W05
+## 1. 本週 Project Goal
+學會用 Event → Function → DOM 看懂前端互動；把掃描頁腳本拆到 `js/scan.js`，並完成一個手機取向的互動（點擊展開評估結果）。
+
+## 2. 本週完成
+- [x] 將 `scan.html` 內嵌 script 獨立為 `js/scan.js`（相對路徑引入）
+- [x] FastAPI 靜態白名單允許 `.js` / `js/`
+- [x] 手機取向互動：點綠色區塊展開／收合評估資訊（E. 自訂 interaction）
+- [x] 深色運動風主題與切角按鈕（視覺調整，另 commit）
+
+## 3. 問 AI 的三個重要問題（本週一定要會）
+- [x] Q1 點「前往運動」為何不能跟展開結果綁在同一個 click？
+- [x] Q2 畫標記點為何一定要用 SVG 的 createElementNS，不能普通 createElement？
+- [ ] Q3 點綠色按鈕後，Event → Function → DOM → UI 各自發生什麼？（待補）
+
+### Q1
+- Prompt:
+若整張 `#result` 都綁 click 來 toggle，使用者點「前往運動」`<a class="btn">` 時，事件會怎麼傳？`event.target.closest("a.btn")` 是在擋什麼？和 `stopPropagation()` 差在哪？足弓掃描頁為什麼最後改成只聽 `#result-toggle`？
+- AI 建議摘要:
+click 會從被點的元素往上「冒泡」到祖先。若父層也有 listener，點連結可能先觸發連結，冒泡到 `#result` 又觸發 toggle，造成跳頁與收合同時亂掉。`closest("a.btn")` 是在 handler 裡判斷「這次點的是不是按鈕連結」，是就 `return` 不 toggle。`stopPropagation()` 是阻止事件繼續往上冒泡，會影響其他 listener；我們只要「連結不要 toggle」，用 `closest` + return 較精準。改成只聽 `#result-toggle` 等於縮小監聽範圍，連結不在按鈕上，不必再擋冒泡。
+- 我驗證的方法:
+對照 `scan.js` 的 `resultToggle.addEventListener("click", …)`；在結果卡展開後分別點綠色區塊與「依建議前往運動」，確認只有前者 toggle、後者正常換頁。
+- 最後我採用 / 修改 / 拒絕了什麼:
+採用專用 `#result-toggle` + 必要時可用 `closest` 防誤觸；未在連結上濫用 `stopPropagation()`。
+
+### Q2
+- Prompt:
+`scan.js` 畫圓點為什麼用 `createElementNS("http://www.w3.org/2000/svg", "circle")`，不能 `createElement("circle")`？`render()` 裡 `overlay.innerHTML = ""` 再重畫，和只刪最後一個點有什麼差？
+- AI 建議摘要:
+`#overlay` 是 SVG 容器，子元素必須是 SVG 命名空間的節點；用 HTML 的 `createElement("circle")` 常無法正確當 SVG 圓形顯示。`innerHTML = ""` 是每次依 `points` 陣列「整批重畫」，撤銷、重設、點數變少時，舊線舊點不會殘留；若只 pop 一個 DOM 節點，要自己維護「第幾點對第幾個元素、線何時刪」，容易和 `points` 不同步。
+- 我驗證的方法:
+讀 `render()` 中 `overlay.innerHTML = ""` 與 `points.forEach` 畫 circle；試「撤銷上一點」「重新標記」，確認圖上點線與點數一致。
+- 最後我採用 / 修改 / 拒絕了什麼:
+採用「狀態在 `points`、畫面每次 render 重畫」；不改成只 patch 最後一個 DOM 節點。
+
+### Q3
+- Prompt:
+（自行撰寫：例如「請用 Event → Function → DOM → UI 解釋點 `#result-toggle` 展開評估結果」）
+- AI 建議摘要:
+（填你的理解或 AI 回覆摘要）
+- 我驗證的方法:
+（填：DevTools、實際 tap、對照 `toggleResultDetail`）
+- 最後我採用 / 修改 / 拒絕了什麼:
+（填）
+
+## 4. Web Concept of the Week
+前端互動鏈：`Event → Function → DOM Change → UI`。  
+`addEventListener` 負責把事件接到函式；`getElementById` 先抓住 HTML 元素；`hidden` / `classList` / `textContent` 負責改畫面。
+
+## 5. Debugging Record
+- Problem: 四點完成後，數字／判定還沒點就顯示；展開指引也不夠明顯。
+- Error / symptom: 使用者覺得「還沒點就有資訊」；不知道要點哪裡。
+- Root cause: 初版只藏 `#out-note`，meta 列仍外露；提示只是一行小字，不像可點按鈕。
+- How I found it: 自己用手機流程走一遍，對照 Expected UI。
+- Fix: 把數字包進 `#result-detail` 預設 `hidden`；改成綠色大按鈕 `#result-toggle`，並更新步驟列提示文字。
+
+## 6. Security Check
+- 足印圖仍只在瀏覽器，未上傳、未進資料庫。
+- 前端 JS 無密碼／API key。
+- 評估僅供居家參考，不能取代醫療診斷。
+
+## 7. Reflection (反思)
+- 本週重點不是背 API，而是能說清：誰被點、呼叫哪個函式、改哪個 DOM。
+- Esc 關閉不適合手機優先，改做點擊展開較合理。
+- 如果下次自己做，我會: 先寫 Event／Function／DOM／Expected UI，再讓 AI 改；改完用五題 Review。
+
+---
+
