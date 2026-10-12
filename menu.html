@@ -13,10 +13,13 @@
         <p class="brand">足弓小幫手</p>
         <p class="brand-sub">可編輯菜單</p>
       </div>
-      <figure class="avatar" aria-label="使用者 HaHaHan">
-        <span class="avatar-mark">哈</span>
-        <figcaption>HaHaHan</figcaption>
-      </figure>
+      <a class="avatar avatar-login" id="account" href="api/auth/google/login" aria-label="使用 Gmail 登入">
+        <span class="avatar-copy">
+          <span id="account-name">登入</span>
+          <span class="avatar-hint" id="account-hint">Gmail</span>
+        </span>
+        <span class="avatar-mark" id="account-mark" aria-hidden="true"></span>
+      </a>
     </header>
 
     <main class="content">
@@ -57,5 +60,6 @@
       <a href="guide.html"><span class="icon">?</span>教學</a>
     </nav>
   </div>
+  <script src="js/auth.js"></script>
 </body>
 </html>

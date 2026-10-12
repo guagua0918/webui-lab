@@ -95,28 +95,109 @@ a {
   margin: 0;
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.55rem;
+  min-width: 0;
+  max-width: 11rem;
 }
 
 .avatar-mark {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 0;
-  border: 1px solid var(--accent);
+  position: relative;
+  width: 2.15rem;
+  height: 2.15rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
   display: grid;
   place-items: center;
-  font-size: 0.75rem;
-  font-weight: 800;
-  background: var(--accent-soft);
-  color: var(--accent);
-  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: var(--surface-2);
+  color: var(--ink);
 }
 
-.avatar figcaption {
+.avatar-mark::before,
+.avatar-mark::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: currentColor;
+}
+
+.avatar-mark::before {
+  width: 0.48rem;
+  height: 0.48rem;
+  top: 0.38rem;
+  border-radius: 50%;
+}
+
+.avatar-mark::after {
+  width: 0.95rem;
+  height: 0.48rem;
+  bottom: 0.32rem;
+  border-radius: 0.5rem 0.5rem 0.15rem 0.15rem;
+}
+
+.avatar-mark.is-letter::before,
+.avatar-mark.is-letter::after {
+  display: none;
+}
+
+.avatar figcaption,
+#account-name {
   margin: 0;
-  font-size: 0.8rem;
-  font-weight: 600;
+  max-width: 6.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.78rem;
+  font-weight: 700;
   color: var(--ink);
+}
+
+.avatar-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 0;
+  line-height: 1.15;
+  text-align: right;
+}
+
+.avatar-hint {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+a.avatar-login {
+  text-decoration: none;
+  padding: 0.22rem 0.22rem 0.22rem 0.7rem;
+  border: 1px solid rgba(214, 255, 75, 0.55);
+  border-radius: 999px;
+  background: rgba(214, 255, 75, 0.08);
+  color: var(--accent);
+}
+
+a.avatar-login #account-name {
+  color: var(--accent);
+}
+
+a.avatar-login .avatar-mark {
+  border: none;
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.avatar-photo {
+  width: 2.15rem;
+  height: 2.15rem;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
 }
 
 .content {
