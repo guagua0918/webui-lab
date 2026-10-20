@@ -2434,3 +2434,413 @@ Add tap-to-toggle scan result details
 ```text
 掃描結果支援點擊展開評估資訊
 ```
+# W06 — Fetch API/AJAX {#FetchAPI}
+OAuth串接外部 (Google Cloud) 公開API，注意CORS？fetch可能被瀏覽器擋下來？
+- OAuth須要對應開發API串接
+- 若只修Web Programming須注意API在哪實作，可以要求AI寫對應JS。
+
+> 本週核心：延續 W05 的 `Event → Function → DOM`，加入網路請求：
+> `Event → Function → fetch() → HTTP/API → JSON → DOM`
+
+---
+
+## 1. 本週學習目標
+
+完成本週後，你應該能：
+
+- 看懂 `fetch()` 如何向外部 API 取得資料。
+- 知道 AJAX 為什麼不需要重新整理整個頁面。
+- 知道 API 回傳 JSON 後如何更新 DOM。
+- 分辨 HTTP error、OAuth / token error、CORS error。
+- 知道為什麼 Postman / curl 成功，但 Browser `fetch()` 仍可能被擋。
+- 能用 AI 協助串接 Google Cloud API，但知道哪些設定不能讓 AI 猜。
+
+## 2. W05 → W06
+
+W05：
+> Event → Function → DOM → UI
+
+W06：
+> Event **→ Function → fetch() → HTTP Request → API → JSON Response** → Function → DOM → UI
+
+
+## 3. Fetch範例 (後續應該使用try-catch)
+
+```js
+async function loadData() {
+    const response = await fetch("https://example.com/api/items");
+
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log(data);
+}
+```
+
+先理解三件事：
+- fetch() → 送出 HTTP request
+- response.ok → HTTP 是否成功
+- response.json() → JSON 轉成 JavaScript data
+
+## 4. AJAX 是什麼？
+AJAX = Asynchronous JavaScript and XML。
+- 不是程式語言，僅為技術概念。
+- 現在實務上使用JSON取代XML。
+
+可以把 AJAX 理解成：
+> JavaScript 在背景向 Server/API 取得或送出資料，不必整頁重新載入。
+
+例如：click Search → text → search() → fetch(API) → JSON → renderResults() → DOM 更新
+
+## 5. AI Coding Prompt：串接 API
+- 不要只問：幫我串 API
+- 建議
+> Page → DOM → Event (e.g.使用者click #searchButton) → Function：新增searchData() → API：使用fetch()GET指定API → JSON list data → DOM： render #results
+Error處理：1. HTTP error; 2. Network error; 3. 空資料
+限制：不要重寫現有 HTML / CSS，沿用目前 Event → Function → DOM 架構。
+
+完成後：
+- VScode trace codes: Event → fetch → API → JSON → DOM
+- 理解並能解釋流程。
+
+## 6. `async / await`
+`fetch()`需要時間：
+> Browser → Network → Server → Processing → Network → Browser
+
+JS預設行為是async，因此 `await fun()` → 同步等到完成：
+```js
+const response = await fetch(url);
+```
+
+可以先理解為：
+> 等非同步操作完成，再繼續使用結果。
+
+## 7. HTTP Status 要檢查
+`fetch()`執行完成，不代表 API 一定成功。
+
+常見 status：
+```text
+200 OK
+400 Bad Request
+401 Unauthorized
+403 Forbidden
+404 Not Found
+500 Internal Server Error
+```
+
+因此建議，僅輸出狀態訊息，避免洩漏詳細錯誤codes：
+```js
+if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+}
+```
+
+## 8. 公開 API、API Key 與 OAuth
+不是所有 API 都能直接呼叫。常見情況：
+- Public API → 不需登入
+- API Key → 辨識 application / project
+- OAuth → 使用者授權 application 存取特定資料，get access token
+
+不要混淆：**API Key ≠ OAuth Access Token**
+
+## 9. OAuth 簡化流程
+Google Cloud / Google APIs 常見概念：
+> User → Google Login / Consent → OAuth → Access Token → fetch() → Google API → JSON
+
+常見名詞，用「你做一個純HTML+CSS+JS的Google Calendar Viewer」來理解，會最直覺。
+- Client ID：Google Cloud申請取得，e.g. 1234567890-abcdefg.apps.googleusercontent.com
+- URI：Application範圍，e.g http://localhost:5500
+- Redirect URI：OAuth後導向，e.g. http://localhost:5500/oauth/callback.html
+- Scope：Application要求哪些權限？呼叫 API 時常見：e.g. https://www.googleapis.com/auth/calendar.readonly
+```http
+Authorization: Bearer ACCESS_TOKEN
+```
+```js
+const response = await fetch(
+    "https://www.googleapis.com/calendar/v3/calendars/primary/events",
+    {
+        headers: {
+            Authorization: `Bearer ${accessToken}`
+        }
+    }
+);
+```
+- Access Token
+- Refresh Token：Access Token過期後，用Refresh Token向Authorization Server換一張新的Access Token。
+```http
+Authorization: Bearer REFRESH_TOKEN
+```
+
+## 10. 不要把 Secret 放進 Frontend
+> 這時，AI比菜鳥更不容易出錯！
+
+不要要求 AI 把以下資訊直接寫進 `app.js`：
+```text
+Client Secret
+Private API Secret
+Service Account private key
+Refresh Token
+Database password
+```
+
+因為 Browser 端 JavaScript 使用者都可以看到。AI coding 時要先問：
+```text
+這個 credential 可以出現在 Browser 嗎？
+還是應該放 Backend？
+```
+
+## 11. CORS (Cross-Origin Resource Sharing)
+> 跨域請求、跨來源資源共享
+假設：
+- Frontend: http://localhost:5500
+- API: https://api.example.com
+
+兩者 Origin (scheme + host + port) 不同。例如：
+```text
+http://localhost:5500
+http://localhost:8000
+```
+即使 host 都是 `localhost`，port 不同仍是不同 Origin。
+
+## 12. 為什麼 Browser 會擋？
+- Browser因資安要求，有Same-Origin Policy。
+- 跨Origin時，Browser會依Server回傳的`CORS headers`決定JavaScript是否可以讀取response。
+
+例如，API回傳以下host，就可以讓來自此host requests讀取：
+```http
+Access-Control-Allow-Origin: https://your-site.example
+```
+
+## 13. 最重要的 CORS 觀念
+可能發生：
+- curl     → 成功：curl (Client and URL) 不會替網頁URL執行Same-Origin Policy
+- Postman  → 成功：不會替網頁URL執行Same-Origin Policy
+- Browser  → CORS blocked
+
+這不矛盾。因為 CORS 主要是 Browser 對網頁 JavaScript 執行的安全限制。
+
+## 14. 常見誤解
+- fetch() 壞掉了。實際可能是：Server 不允許目前 Origin。
+- Frontend 加 Access-Control-Allow-Origin 就可以。通常不對。`Access-Control-Allow-Origin`主要應由 Server response 回傳。
+- 把 Browser CORS 關掉就好了。只能作暫時測試，不是正式解法。
+
+## 15. Preflight
+某些跨 Origin request 在真正送出前，Browser 會先送：
+```http
+OPTIONS
+```
+
+稱為：
+```text
+Preflight Request
+```
+
+流程：
+```text
+Browser
+↓
+OPTIONS
+↓
+Server
+↓
+是否允許？
+↓
+真正的 GET / POST
+```
+
+W06 先知道概念即可。
+
+## 16. AI Coding：遇到 CORS 怎麼問？
+> 其實目前AI都會自行判斷是否為CORS問題
+
+建議CORS問題：
+```text
+我的 Browser fetch() 發生 CORS error。
+請不要先修改 code。
+先幫我判斷：
+1. Frontend origin 是什麼？
+2. API origin 是什麼？
+3. 是否 Cross-Origin？
+4. Network 中 request 是否有送出？
+5. 是否有 OPTIONS preflight？
+6. Server response 有哪些 CORS headers？
+7. 問題應修 Frontend、Backend、OAuth，還是 API console 設定？
+最後再提出最小修改方式。
+```
+
+## 17. API Debug 建議順序
+```text
+1. URL 正確嗎？
+2. HTTP method 正確嗎？
+3. HTTP status 是多少？
+4. response body 是什麼？
+5. 是否需要 API key / OAuth token？
+6. OAuth scope 正確嗎？
+7. Browser Console 有 CORS error 嗎？
+8. Network 有 OPTIONS request 嗎？
+9. Server CORS headers 正確嗎？
+```
+
+不要看到：fetch failed，就讓 AI 整份重寫。
+
+## 18. Google Cloud API 串接檢查
+如果使用 Google API / OAuth，常見檢查流程：
+```text
+Google Cloud Project
+↓
+API 是否 Enabled
+↓
+OAuth Client 設定
+↓
+Authorized JavaScript Origin
+↓
+Authorized Redirect URI
+↓
+OAuth Scope
+↓
+取得 Access Token
+↓
+呼叫 API
+```
+
+AI 可以協助產生程式與解釋流程，但以下設定要依實際專案確認，不要讓 AI 猜：
+```text
+Client ID
+Redirect URI
+Enabled APIs
+Scopes
+Origins
+```
+
+## 本週實作與Debug紀錄
+
+足弓小幫手（與後端 W06／`vd_subclass` 對接）：
+
+| 做了什麼 | 前端檔案 | 打哪支 API |
+|---|---|---|
+| 未登入只顯示「登入」；登入後名字＋頭像 | `js/auth.js`、各頁頁首、`css/style.css` | `GET api/auth/me` |
+| 點頭像下拉：個人設定、登出 | `js/auth.js`、`settings.html`、`js/settings.js` | `POST api/auth/logout` |
+| 底部導覽：掃描／運動／菜單來自目錄 | `js/nav.js`；HTML 只留總覽＋`#nav-subclass`＋教學 | `GET api/subclass/pcid/1` |
+| 沒登入藏連結；直接開 `/scan` 等顯示請先登入 | `js/nav.js` | 同上，看 401 |
+| 網址不要 `.html` | 各頁 `href="scan"` 等 | 後端 `main.py` 補 `.html` |
+
+教學（`guide`）維持前端寫死，不進 `class`／`vd_subclass`。
+
+Debug 紀錄（HTTP 401）：
+
+```text
+現象：未登入時底部沒有掃描／運動／菜單；F12 Network 看到 api/subclass/pcid/1 → 401
+判斷：不是 CORS（同源、有 response）；不是 JSON 壞掉；是 Authentication——沒有有效 access_token cookie
+處理：前端依 401 不 render 側欄項目；真正擋資料的是後端 Depends(get_current_member)
+```
+
+另一層：`dev_user` 在 psql 查 `class`／`co` 會 permission denied——那是 DB 帳號權限，和瀏覽器 401 不是同一層。
+
+## AI Coding Review（對自己專案回答）
+
+```text
+1. fetch() 在哪個 function？
+   loadAccount()（auth.js）、loadNavigation()（nav.js）、logout()、loadProfile()（settings.js）
+2. 什麼 event 觸發它？
+   頁面載入就打 me／subclass；登出是點選單「登出」
+3. HTTP method 是什麼？
+   me／subclass：GET；logout：POST
+4. Authentication 怎麼提供？
+   credentials: "same-origin"，瀏覽器自動帶 HttpOnly cookie（前端不讀 JWT 字串）
+5. Response 是什麼格式？
+   me：JSON name/email/picture；subclass：JSON 陣列 child_name…；logout：204
+6. 哪個 function 處理 JSON？
+   showSignedIn、renderItems、loadProfile
+7. 哪個 function 更新 DOM？
+   同上；401 時 showGate／hidden 連結
+8. HTTP error 怎麼處理？
+   try/catch；401 當未登入；其他印 console 或提示
+9. 是否 Cross-Origin？
+   否：頁面與 /api 同站（學校子路徑同一 origin）
+10. 若出現 CORS，應去哪一層修？
+    Server response 的 CORS headers／部署設定，不是在前端加 Access-Control-Allow-Origin
+```
+
+---
+
+## AI Coding
+> AI 可以幫你寫 `fetch()`，但你必須知道 request 往哪裡去、帶了什麼權限、response 怎麼回來，以及 Browser 為什麼可能拒絕讓 JavaScript 讀取它。
+
+### Google Cloud Console
+- GMail > 認證信用卡才能開發
+- Create Project > search "oauth"
+- Google Auth Platform > 用戶端 > Input data
+- Add URI: https://demo.wke.csie.ncnu.edu.tw
+- Add Redirect URI: https://demo.wke.csie.ncnu.edu.tw/s115321503/api/auth/google/callback
+  （學號路徑依自己的 repo；講義範例常寫 s115999999）
+
+> Header 改成「登入」；點了走 Gmail。登入後依 `api/auth/me` 顯示名字／頭像。後端 OAuth／JWT 在 FastAPI（見 `fastapi-backend/docs/psql.md` W06、`architecture.md`）。
+
+- `GET api/auth/google/login`: begin Google OAuth and redirect the browser.
+- `GET api/auth/me`: return the signed-in profile as JSON, for example `{ "name": "王老師", "email": "teacher@example.com", "picture": "https://..." }`.
+- Return `401 Unauthorized` from `api/auth/me` when the visitor is not signed in. The frontend then keeps the sign-in link visible.
+
+The frontend uses a same-origin session (`credentials: "same-origin"`). The backend must validate the Google identity and `email_verified` server-side, then manage the session with secure cookie attributes such as `HttpOnly`, `Secure`, and an appropriate `SameSite` policy. Do not put Google client secrets in browser code.
+
+> click 頭像：下拉「個人設定」「登出」（實作在 `js/auth.js`）
+
+## F12 Trace Web Implementation
+- 未登入：`api/auth/me` → 401 → 右上角「登入」
+- 點登入：`api/auth/google/login` → Google → callback → cookie → 回首頁
+- 登入後：`api/auth/me` → 200 → 名字＋頭像；`api/subclass/pcid/1` → 200 → 底部出現掃描／運動菜單／運動
+- 登出：`POST api/auth/logout` → 清 cookie → reload
+
+## User's Navigation Menu（講義範例 vs 本專案）
+
+講義教務系統：
+
+```prompt
+Update loadPageData(): fetch teachers_ops.json改為 ./api/subclass/pcid/4`
+取得items以render item.child_name，click -> fetch ./api/subclass/pcid/{cid}
+```
+
+足弓小幫手實際：
+
+- `js/nav.js`：`GET api/subclass/pcid/1`（資料庫裡 hahahan 的子節點）
+- `child_name` 對到頁面：掃描→`scan`、運動菜單→`menu`、運動→`exercise`
+- **要登入**才拿得到；未登入 401，不畫這三項
+- fetch 用 try／catch；`credentials: "same-origin"`
+
+## 學習心得（W06）
+
+- 流程變成：`Event → fetch → API → JSON → DOM`。登入狀態也是一次 `fetch`。
+- 藏按鈕不夠；目錄與 notes 的資料要後端 401 才算鎖住。
+- 網址 `/scan` 對檔案 `scan.html` 是後端靜態設定；連結不要寫 `.html`。
+- 跨 repo：前端 UI／fetch 寫在 `webui-lab`；JWT、`vd_subclass`、保護路由寫在 `fastapi-backend`（詳見那邊 `psql.md`／`architecture.md`）。
+
+---
+
+# W07 — 表單處理與前端輸入驗證 {#FormValidation}
+XSS（跨站腳本攻擊）？具表單功能的頁面 + 基本驗證 
+
+--- 
+
+# W08 — OAuth 2.0 Login {#OAuth}
+了解第三方登入的運作與優缺點 
+
+---
+
+# W09 — 使用者登入與token {#JWT}
+JWT？伺服器「記得」卻不存session，登入防弊
+
+---
+
+# W10 — Session/Cookie狀態管理 {#Cookie}
+Cookie vs. LocalStorage vs. SessionStorage；CSRF攻擊原理
+
+---
+
+# W11 — 專案整合與重構 {#Integration}
+API限流、API Key/Secrets、功能完整度達80%以上
+
+---
+
+# W12 — 部署前資安檢查清單 {#Deployment}
+HTTPS、環境變數、CORS、可公開存取的部署連結

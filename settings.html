@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>個人設定｜足弓小幫手</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <p class="brand">足弓小幫手</p>
+        <p class="brand-sub">個人設定</p>
+      </div>
+      <div class="account" id="account">
+        <a class="account-link" id="account-login" href="api/auth/google/login">登入</a>
+        <div class="account-signed" id="account-signed" hidden>
+          <button type="button" class="avatar-btn" id="account-toggle" aria-expanded="false" aria-controls="account-dropdown" aria-haspopup="menu">
+            <span class="account-name" id="account-name"></span>
+            <span class="avatar-face">
+              <img class="avatar-photo" id="account-photo" alt="" hidden>
+              <span class="avatar-letter" id="account-letter" hidden></span>
+            </span>
+          </button>
+          <div class="account-dropdown" id="account-dropdown" hidden role="menu">
+            <a role="menuitem" href="settings">個人設定</a>
+            <button type="button" role="menuitem" id="account-logout">登出</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <h1 class="page-title">個人設定</h1>
+      <article class="card" id="profile-card">
+        <p id="profile-status">讀取帳號資料…</p>
+        <p id="profile-name" hidden></p>
+        <p id="profile-email" class="muted" hidden></p>
+      </article>
+      <a class="btn btn-ghost" href="index">回總覽</a>
+    </main>
+
+    <nav class="bottom-nav" aria-label="主要導覽">
+      <a href="index"><span class="icon">▣</span>總覽</a>
+      <span id="nav-subclass"></span>
+      <a href="guide"><span class="icon">?</span>教學</a>
+    </nav>
+  </div>
+  <script src="js/auth.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/settings.js"></script>
+</body>
+</html>

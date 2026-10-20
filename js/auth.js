@@ -1,43 +1,93 @@
-const account = document.getElementById("account");
-const accountMark = document.getElementById("account-mark");
+const loginLink = document.getElementById("account-login");
+const signedIn = document.getElementById("account-signed");
+const toggle = document.getElementById("account-toggle");
+const dropdown = document.getElementById("account-dropdown");
+const photo = document.getElementById("account-photo");
+const letter = document.getElementById("account-letter");
 const accountName = document.getElementById("account-name");
-const accountHint = document.getElementById("account-hint");
+const logoutButton = document.getElementById("account-logout");
+
+function closeMenu() {
+  dropdown.hidden = true;
+  toggle.setAttribute("aria-expanded", "false");
+}
 
 function showSignedOut() {
-  account.href = "api/auth/google/login";
-  account.classList.add("avatar-login");
-  account.setAttribute("aria-label", "使用 Gmail 登入");
-  accountMark.textContent = "";
-  accountMark.classList.remove("is-letter");
-  accountName.textContent = "登入";
-  accountHint.hidden = false;
+  closeMenu();
+  signedIn.hidden = true;
+  loginLink.hidden = false;
 }
 
 function showSignedIn(member) {
   const label = member.name || member.email || "已登入";
-  account.removeAttribute("href");
-  account.classList.remove("avatar-login");
-  account.setAttribute("aria-label", label);
+  loginLink.hidden = true;
+  signedIn.hidden = false;
   accountName.textContent = label;
-  accountHint.hidden = true;
-  if (!member.picture) {
-    accountMark.textContent = label.slice(0, 1);
-    accountMark.classList.add("is-letter");
+  toggle.setAttribute("aria-label", label);
+  if (member.picture) {
+    photo.src = member.picture;
+    photo.alt = "";
+    photo.hidden = false;
+    letter.hidden = true;
+    letter.textContent = "";
     return;
   }
-  const photo = document.createElement("img");
-  photo.className = "avatar-photo";
-  photo.alt = "";
-  photo.src = member.picture;
-  accountMark.replaceWith(photo);
+  photo.removeAttribute("src");
+  photo.hidden = true;
+  letter.hidden = false;
+  letter.textContent = label.slice(0, 1);
 }
 
-fetch("api/auth/me", { credentials: "same-origin" })
-  .then(function (response) {
+function toggleMenu() {
+  const open = dropdown.hidden;
+  dropdown.hidden = !open;
+  toggle.setAttribute("aria-expanded", open ? "true" : "false");
+}
+
+async function logout() {
+  if (!window.confirm("確定要登出嗎？")) {
+    return;
+  }
+  logoutButton.disabled = true;
+  try {
+    const response = await fetch("api/auth/logout", {
+      method: "POST",
+      credentials: "same-origin",
+    });
     if (!response.ok) {
-      throw new Error("signed out");
+      throw new Error("HTTP " + response.status);
     }
-    return response.json();
-  })
-  .then(showSignedIn)
-  .catch(showSignedOut);
+    window.location.reload();
+  } catch (error) {
+    logoutButton.disabled = false;
+    console.error("無法登出", error);
+    window.alert("登出失敗，稍後再試");
+  }
+}
+
+async function loadAccount() {
+  try {
+    const response = await fetch("api/auth/me", { credentials: "same-origin" });
+    if (!response.ok) {
+      throw new Error("HTTP " + response.status);
+    }
+    showSignedIn(await response.json());
+  } catch (error) {
+    showSignedOut();
+  }
+}
+
+toggle.addEventListener("click", toggleMenu);
+logoutButton.addEventListener("click", logout);
+document.addEventListener("click", function (event) {
+  if (signedIn.hidden || signedIn.contains(event.target)) {
+    return;
+  }
+  closeMenu();
+});
+document.addEventListener("keydown", function (event) {
+  if (event.key === "Escape") {
+    closeMenu();
+  }
+});
+loadAccount();

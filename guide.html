@@ -13,13 +13,22 @@
         <p class="brand">足弓小幫手</p>
         <p class="brand-sub">拍攝與練習教學</p>
       </div>
-      <a class="avatar avatar-login" id="account" href="api/auth/google/login" aria-label="使用 Gmail 登入">
-        <span class="avatar-copy">
-          <span id="account-name">登入</span>
-          <span class="avatar-hint" id="account-hint">Gmail</span>
-        </span>
-        <span class="avatar-mark" id="account-mark" aria-hidden="true"></span>
-      </a>
+      <div class="account" id="account">
+        <a class="account-link" id="account-login" href="api/auth/google/login">登入</a>
+        <div class="account-signed" id="account-signed" hidden>
+          <button type="button" class="avatar-btn" id="account-toggle" aria-expanded="false" aria-controls="account-dropdown" aria-haspopup="menu">
+            <span class="account-name" id="account-name"></span>
+            <span class="avatar-face">
+              <img class="avatar-photo" id="account-photo" alt="" hidden>
+              <span class="avatar-letter" id="account-letter" hidden></span>
+            </span>
+          </button>
+          <div class="account-dropdown" id="account-dropdown" hidden role="menu">
+            <a role="menuitem" href="settings">個人設定</a>
+            <button type="button" role="menuitem" id="account-logout">登出</button>
+          </div>
+        </div>
+      </div>
     </header>
 
     <main class="content">
@@ -38,18 +47,17 @@
         <p class="muted">手機固定於後方或內側，畫面穩定後再開始提踵。</p>
       </article>
 
-      <a class="btn btn-primary" href="scan.html">去掃描足印</a>
-      <a class="btn btn-ghost" href="about.html">關於與免責</a>
+      <a class="btn btn-primary" href="scan">去掃描足印</a>
+      <a class="btn btn-ghost" href="about">關於與免責</a>
     </main>
 
     <nav class="bottom-nav" aria-label="主要導覽">
-      <a href="index.html"><span class="icon">▣</span>總覽</a>
-      <a href="scan.html"><span class="icon">👣</span>掃描</a>
-      <a href="exercise.html"><span class="icon">↑</span>運動</a>
-      <a href="menu.html"><span class="icon">☰</span>菜單</a>
-      <a class="active" href="guide.html"><span class="icon">?</span>教學</a>
+      <a href="index"><span class="icon">▣</span>總覽</a>
+      <span id="nav-subclass"></span>
+      <a href="guide"><span class="icon">?</span>教學</a>
     </nav>
   </div>
   <script src="js/auth.js"></script>
+  <script src="js/nav.js"></script>
 </body>
 </html>

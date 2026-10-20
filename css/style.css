@@ -91,113 +91,105 @@ a {
   letter-spacing: 0.02em;
 }
 
-.avatar {
+.account {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.account-link {
   margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.account-signed {
+  position: relative;
+}
+
+.avatar-btn {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
-  min-width: 0;
+  gap: 0.45rem;
   max-width: 11rem;
-}
-
-.avatar-mark {
-  position: relative;
-  width: 2.15rem;
-  height: 2.15rem;
-  flex-shrink: 0;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 1px solid var(--line-strong);
-  display: grid;
-  place-items: center;
-  font-size: 0.8rem;
-  font-weight: 700;
-  background: var(--surface-2);
-  color: var(--ink);
-}
-
-.avatar-mark::before,
-.avatar-mark::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  background: currentColor;
-}
-
-.avatar-mark::before {
-  width: 0.48rem;
-  height: 0.48rem;
-  top: 0.38rem;
-  border-radius: 50%;
-}
-
-.avatar-mark::after {
-  width: 0.95rem;
-  height: 0.48rem;
-  bottom: 0.32rem;
-  border-radius: 0.5rem 0.5rem 0.15rem 0.15rem;
-}
-
-.avatar-mark.is-letter::before,
-.avatar-mark.is-letter::after {
-  display: none;
-}
-
-.avatar figcaption,
-#account-name {
   margin: 0;
-  max-width: 6.5rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.account-name {
+  max-width: 7rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--ink);
+  font-size: 0.95rem;
 }
 
-.avatar-copy {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  min-width: 0;
-  line-height: 1.15;
-  text-align: right;
-}
-
-.avatar-hint {
-  font-size: 0.62rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-}
-
-a.avatar-login {
-  text-decoration: none;
-  padding: 0.22rem 0.22rem 0.22rem 0.7rem;
-  border: 1px solid rgba(214, 255, 75, 0.55);
-  border-radius: 999px;
-  background: rgba(214, 255, 75, 0.08);
-  color: var(--accent);
-}
-
-a.avatar-login #account-name {
-  color: var(--accent);
-}
-
-a.avatar-login .avatar-mark {
-  border: none;
-  background: var(--accent);
-  color: var(--accent-ink);
-}
-
-.avatar-photo {
+.avatar-face {
   width: 2.15rem;
   height: 2.15rem;
   flex-shrink: 0;
-  object-fit: cover;
-  border-radius: 50%;
   border: 2px solid var(--accent);
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--surface-2);
+}
+
+.avatar-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.avatar-photo[hidden],
+.avatar-letter[hidden] {
+  display: none;
+}
+
+.account-dropdown {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  min-width: 8.5rem;
+  display: flex;
+  flex-direction: column;
+  padding: 0.25rem;
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  z-index: 20;
+}
+
+.account-dropdown[hidden] {
+  display: none;
+}
+
+.account-dropdown a,
+.account-dropdown button {
+  margin: 0;
+  padding: 0.55rem 0.7rem;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.92rem;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.account-dropdown a:hover,
+.account-dropdown button:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .content {
@@ -586,11 +578,15 @@ button.btn {
   bottom: 0;
   width: min(100%, 28rem);
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
   border-top: 1px solid var(--line-strong);
   background: rgba(10, 13, 18, 0.94);
   backdrop-filter: blur(12px);
   z-index: 20;
+}
+
+#nav-subclass {
+  display: contents;
 }
 
 .bottom-nav a {
