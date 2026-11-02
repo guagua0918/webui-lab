@@ -33,11 +33,48 @@
 
     <main class="content">
       <h1 class="page-title">個人設定</h1>
-      <article class="card" id="profile-card">
-        <p id="profile-status">讀取帳號資料…</p>
-        <p id="profile-name" hidden></p>
-        <p id="profile-email" class="muted" hidden></p>
+      <p class="lead">只改畫面上的顯示名稱；Google 帳號資料不會被改動。</p>
+
+      <p id="profile-status" class="step-banner">讀取帳號資料…</p>
+
+      <article class="card" id="profile-card" hidden>
+        <form id="profile-form" novalidate>
+          <div class="form-field">
+            <label for="display-name">顯示名稱</label>
+            <input
+              id="display-name"
+              name="display_name"
+              type="text"
+              required
+              minlength="2"
+              maxlength="40"
+              autocomplete="nickname"
+            >
+            <p class="field-error" id="name-error" hidden></p>
+          </div>
+
+          <div class="form-field">
+            <label for="google-name">Google 姓名（唯讀）</label>
+            <input id="google-name" type="text" readonly tabindex="-1">
+          </div>
+
+          <div class="form-field">
+            <label for="profile-email">Email（唯讀）</label>
+            <input id="profile-email" type="email" readonly tabindex="-1">
+          </div>
+
+          <div class="form-field" id="picture-field" hidden>
+            <p class="muted">頭貼（Google，唯讀）</p>
+            <img id="profile-picture" class="profile-picture" alt="">
+          </div>
+
+          <div class="btn-row">
+            <button type="submit" class="btn btn-primary" id="btn-save">儲存</button>
+          </div>
+          <p class="form-message" id="form-message" role="status"></p>
+        </form>
       </article>
+
       <a class="btn btn-ghost" href="index">回總覽</a>
     </main>
 

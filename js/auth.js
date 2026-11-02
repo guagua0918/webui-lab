@@ -2,8 +2,8 @@ const loginLink = document.getElementById("account-login");
 const signedIn = document.getElementById("account-signed");
 const toggle = document.getElementById("account-toggle");
 const dropdown = document.getElementById("account-dropdown");
-const photo = document.getElementById("account-photo");
-const letter = document.getElementById("account-letter");
+const accountPhoto = document.getElementById("account-photo");
+const accountLetter = document.getElementById("account-letter");
 const accountName = document.getElementById("account-name");
 const logoutButton = document.getElementById("account-logout");
 
@@ -19,23 +19,24 @@ function showSignedOut() {
 }
 
 function showSignedIn(member) {
-  const label = member.name || member.email || "已登入";
+  // 優先自訂 display_name；否則 Google name／email
+  const label = member.display_name || member.name || member.email || "已登入";
   loginLink.hidden = true;
   signedIn.hidden = false;
   accountName.textContent = label;
   toggle.setAttribute("aria-label", label);
   if (member.picture) {
-    photo.src = member.picture;
-    photo.alt = "";
-    photo.hidden = false;
-    letter.hidden = true;
-    letter.textContent = "";
+    accountPhoto.src = member.picture;
+    accountPhoto.alt = "";
+    accountPhoto.hidden = false;
+    accountLetter.hidden = true;
+    accountLetter.textContent = "";
     return;
   }
-  photo.removeAttribute("src");
-  photo.hidden = true;
-  letter.hidden = false;
-  letter.textContent = label.slice(0, 1);
+  accountPhoto.removeAttribute("src");
+  accountPhoto.hidden = true;
+  accountLetter.hidden = false;
+  accountLetter.textContent = label.slice(0, 1);
 }
 
 function toggleMenu() {
