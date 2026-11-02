@@ -253,3 +253,125 @@ click 會從被點的元素往上「冒泡」到祖先。若父層也有 listene
 
 ---
 
+# W08
+## 1. 本週 Project Goal
+用上課的表單／驗證／XSS 觀念做個人設定：只改 `display_name`，不改 Google OAuth 欄位。
+
+## 2. 本週完成
+- [x] `settings.html` 表單；`settings.js` 驗證＋`preventDefault`；錯誤用 `textContent`
+- [x] 頂欄 `auth.js` 優先顯示 `display_name`
+- [x] 對應後端 `PATCH /api/auth/me`（Pydantic 再驗）；Google 的 name／email／picture 唯讀
+
+## 3. 問 AI 的重要問題
+- [x] Q1 哪一邊驗證被繞過會怎樣？
+- [x] Q2 有 HTML required 為何還要 JS？
+- [x] Q3 innerHTML 跟 textContent 差在哪？
+- [x] Q4 為什麼前端驗證不能取代後端？
+- [x] Q5 後端驗證過就不會 XSS 嗎？
+- [x] Q6 AI 程式怎麼檢查 XSS？
+- [x] Q7 為什麼 form 還寫 novalidate？
+- [x] Q8 頭貼用 img src＝Google URL，算 XSS 嗎？
+
+### Q1
+- Prompt:
+個人設定有 HTML required、JS 驗證、後端 Pydantic。哪一邊被繞過會怎樣？資料還安全嗎？
+- AI 建議摘要:
+HTML／JS 被繞過（改 DOM、curl、關 JS）只少了瀏覽器提示，請求仍打得到 API。後端再擋長度／格式，不合規就不寫 DB。若後端沒驗，髒資料會入庫。三層裡**後端才是資料防線**；前面是 UX。
+- 我驗證的方法:
+`settings.js` 有 `validateDisplayName`；後端 `MemberProfileUpdate` 有 `min_length=2`。想像 curl 送 1 字名稱應 422。
+- 最後我採用 / 修改 / 拒絕了什麼:
+三層都留；不靠「使用者不會開 DevTools」。
+
+### Q2
+- Prompt:
+為什麼 HTML 已經有 required／minlength，還需要 JavaScript 驗證？
+- AI 建議摘要:
+HTML 驗證便宜但訊息死板、易被改 DOM 跳過。JS 可 trim、自訂錯誤文案、欄位下方提示，並 `preventDefault` 避免整頁重載。JS 仍可被關，所以還要後端。
+- 我驗證的方法:
+設定頁錯誤顯示在 `#name-error`，不用 alert；送出用 `submit`＋`preventDefault`。
+- 最後我採用 / 修改 / 拒絕了什麼:
+HTML 基本約束＋JS 友善訊息；兩者並存。
+
+### Q3
+- Prompt:
+`innerHTML` 跟 `textContent` 有什麼差異？顯示顯示名稱或錯誤時該用哪個？
+- AI 建議摘要:
+`innerHTML` 把字串當 HTML 解析，可能執行腳本（XSS）。`textContent` 當純文字，標籤不會執行。顯示使用者或 API 回來的字，優先 `textContent`。
+- 我驗證的方法:
+`settings.js` 的 `setNameError`／`setFormMessage`、`auth.js` 的名字都用 `textContent`。
+- 最後我採用 / 修改 / 拒絕了什麼:
+拒絕用 `innerHTML` 拼名稱或錯誤訊息。
+
+### Q4
+- Prompt:
+為什麼前端驗證不能取代後端驗證？
+- AI 建議摘要:
+攻擊者可以不跑我的網頁，直接打 `PATCH /api/auth/me`。前端只服務正常 UI；凡寫入 DB 的規則後端一定要再驗。
+- 我驗證的方法:
+對照講義 Task4；後端有 Pydantic，前端再短也不算唯一關卡。
+- 最後我採用 / 修改 / 拒絕了什麼:
+前後端都驗；不把安全押在瀏覽器。
+
+### Q5
+- Prompt:
+如果資料已經過後端驗證，是不是就一定不會發生 XSS？
+- AI 建議摘要:
+不一定。後端多半管格式／長度，不管「顯示時安不安全」。存進 DB 的字若再用 `innerHTML` 塞回頁面，仍可能 XSS。要驗證＋安全輸出（textContent／跳脫）。
+- 我驗證的方法:
+頂欄與設定頁都用 textContent 顯示 `display_name`。
+- 最後我採用 / 修改 / 拒絕了什麼:
+採用「後端驗資料、前端純文字顯示」。
+
+### Q6
+- Prompt:
+AI 產生的程式碼應如何檢查是否存在 XSS 風險？
+- AI 建議摘要:
+搜 `innerHTML`／`document.write`／把字串拼進 HTML；看資料是不是使用者或 API；改成 textContent 或 createElement；用怪字串（含 `<`、`onerror`）測一次畫面會不會執行。
+- 我驗證的方法:
+檢查 `settings.js`、`auth.js` 無 innerHTML 顯示使用者輸入。
+- 最後我採用 / 修改 / 拒絕了什麼:
+採用人工掃過再留在專案裡。
+
+### Q7
+- Prompt:
+我的 `<form>` 為什麼還加 `novalidate`？HTML 不是已經有 required 了嗎？
+- AI 建議摘要:
+`novalidate` 關掉瀏覽器內建泡泡提示，改由自己的 JS 顯示欄位下方錯誤（符合講義「不要只用 alert／要自訂訊息」）。不是不要驗證，是**改成我們控制驗證 UX**；後端照樣要驗。
+- 我驗證的方法:
+`settings.html` 有 `novalidate`；錯誤走 `#name-error`。
+- 最後我採用 / 修改 / 拒絕了什麼:
+採用 novalidate＋JS 錯誤區；保留 input 的 required／minlength 當語意提示。
+
+### Q8
+- Prompt:
+頭貼用 `<img src="Google 的 picture URL">`，算不算 XSS？跟把同一個字串丟進 innerHTML 差在哪？
+- AI 建議摘要:
+`img.src` 設的是資源網址，瀏覽器去載圖片，一般不會把 URL 當 HTML／JS 執行，風險類型不同（比較像惡意圖床、隱私追蹤，不是經典 DOM XSS）。若把 URL 或任意字串用 innerHTML 包成 HTML，才容易變成可執行標記。Google 大頭貼 URL 通常可當圖；仍不要把不可信字串當 HTML 插入。
+- 我驗證的方法:
+`settings.js`／`auth.js` 用 `img.src = member.picture`，沒用 innerHTML 包 picture。
+- 最後我採用 / 修改 / 拒絕了什麼:
+採用 img.src；頭貼唯讀、不讓使用者上傳任意 HTML。
+
+## 4. Web Concept of the Week
+```text
+HTML 結構 → JS 驗證＋preventDefault → fetch PATCH
+顯示用 textContent；寫入靠後端再驗
+display_name 自訂；name/email/picture 仍屬 Google
+```
+
+## 5. Debugging Record
+- Problem: 講義是註冊表（含密碼），專案是 Google 登入
+- Root cause: 產品身分模型不同
+- Fix: 同一套表單／驗證／XSS 精神，改做「已登入改顯示名稱」
+
+## 6. Security Check
+- 不改 OAuth 身分欄位；只送 `display_name`
+- 前端可繞過 ≠ 後端可繞過
+- 驗證過的字仍禁止 innerHTML 顯示
+
+## 7. Reflection (反思)
+講義註冊表精神套在個人設定；XSS 關鍵是輸出方式，不只輸入驗證。
+- 下次: 若老師要看 curl 繞過 demo，補一筆 422 到 web.md。
+
+---
+

@@ -2817,18 +2817,257 @@ Update loadPageData(): fetch teachers_ops.json改為 ./api/subclass/pcid/4`
 
 ---
 
-# W07 — 表單處理與前端輸入驗證 {#FormValidation}
-XSS（跨站腳本攻擊）？具表單功能的頁面 + 基本驗證 
+# W07 — Fetch API/AJAX串接外部公開API 2{#FetchAPI2}
 
---- 
+練習熟悉 Event → Function → fetch() → HTTP/API → JSON → DOM
 
-# W08 — OAuth 2.0 Login {#OAuth}
-了解第三方登入的運作與優缺點 
+> sidebar新增navigation區塊，對應api/root，故固定 (不管是否登入)。也就是登入後的功能區塊在此區塊下，要清楚分別兩區塊。若沒登入，預設內容空白。
+- 主要變更在 index.html、app.js 和 components.css。
+> id="rootNavigationHeading"不須展開，click後直接呼叫 /api/root/co/{cid}取得資料後，只取每個JSON物件前四個column顯示資料列表
+- 變更位於 index.html、app.js、components.css，API 格式也已記錄於 README.md。
+> dashboardCards 改為reuse 由 /api/root取得name, n顯示名稱和數量。[查看詳情](https://demo.wke.csie.ncnu.edu.tw/teacher/tasks) click如同click後直接呼叫 /api/root/co/{cid}取得資料。
+
+> 建立字典讓Department, Semester, Course, Member, Section對應：系所 學期 課程 教職員生數 開設數，以顯示於卡片。數量後面的 "筆" 可以刪除不顯示
+
+> Bugs: 導覽以下項目click (同卡片詳情) 沒反應
 
 ---
 
-# W09 — 使用者登入與token {#JWT}
-JWT？伺服器「記得」卻不存session，登入防弊
+# W08 — 表單處理與前端輸入驗證 {#FormValidation}
+
+XSS（跨站腳本攻擊）？具表單功能的頁面 + 基本驗證 
+
+## 1. 學習目標
+
+- 使用 HTML `<form>` 建立表單。
+- 使用 JavaScript 讀取、驗證使用者輸入。
+- 理解 XSS（Cross-Site Scripting，跨站腳本攻擊）。
+- 透過 AI Coding 完成表單功能與基本安全防護。
+
+## 2. HTML Form 基礎
+
+常用元素：
+
+| 元素           | 用途           |
+| -------------- | -------------- |
+| `<form>`       | 定義表單       |
+| `<input>`      | 輸入資料       |
+| `<label>`      | 欄位標籤       |
+| `<button>`     | 提交表單       |
+| `required`     | 必填           |
+| `minlength`    | 最小字元數     |
+| `type="email"` | Email格式驗證  |
+| `pattern`      | 正規表示式驗證 |
+
+範例：建立註冊表單。SPA寫法，form裡面沒有 `action=...`
+```html
+<form id="registerForm">
+  <label for="username">姓名</label>
+  <input id="username" type="text"
+         required minlength="2">
+
+  <label for="email">Email</label>
+  <input id="email" type="email" required>
+
+  <button type="submit">送出</button>
+</form>
+
+<p id="result"></p>
+
+<script src="app.js"></script>
+```
+
+## 3. JavaScript 表單處理
+
+核心流程：
+
+`Event → Function → Validation → DOM Update`
+
+```javascript
+const form = document.querySelector("#registerForm");
+
+form.addEventListener("submit", function(event) {
+  event.preventDefault(); // 阻止預設提交行為
+
+  const username = document.querySelector("#username").value.trim();
+  const email = document.querySelector("#email").value.trim();
+  if (username.length < 2) {
+    alert("姓名至少需要2個字元");
+    return;
+  }
+
+  const response = await fetch("/register", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ username })
+  });
+
+  if (response.ok) {
+    console.log("註冊成功");
+  }
+
+  document.querySelector("#result").textContent = `註冊資料：${username} $email})`;
+});
+```
+
+重點：
+- `submit`：使用者提交表單時觸發。
+- `preventDefault()`：取消表單的預設提交，阻止瀏覽器預設提交與reload page。form裡面沒有 action=... 若沒有 event.preventDefault(); 就會觸發 action=''。
+> 一句話總結：preventDefault()不是禁止提交資料，而是把「何時提交、如何提交、提交後如何處理」的控制權，從瀏覽器預設行為交給JavaScript (現今前端SPA寫法) vs. 傳統寫法，已經過時。
+```html
+<form action="/register" method="POST">
+  <input name="username" type="text">
+  <button type="submit">送出</button>
+</form>
+```
+- `.value`：取得輸入值。
+- `.trim()`：移除字串前後空白。
+- `if`：進行自訂驗證。
+- `.textContent`：安全地顯示純文字。
+
+HTML內建驗證通常會先於`submit`事件執行。
+
+## 4. 前端驗證（Client-side Validation）
+
+常見驗證：
+
+1. 必填欄位：`required`
+2. 長度限制：`minlength`、`maxlength`
+3. 格式檢查：`type="email"`、`pattern`
+4. 自訂條件：JavaScript `if`判斷
+
+例如：
+
+```javascript
+if (!email.includes("@")) {
+  alert("Email格式錯誤");
+  return;
+}
+```
+
+注意：上述檢查只是簡化示例，實務上應優先使用HTML內建Email驗證。
+
+**重要：前端驗證不等於安全防護。**
+
+使用者可以透過DevTools、curl或Postman繞過前端驗證。
+
+若表單資料會送到後端API，後端必須重新驗證資料。
+
+## 5. XSS（Cross-Site Scripting）
+
+### 什麼是XSS？
+
+攻擊者讓惡意JavaScript在其他使用者的瀏覽器中執行。
+
+可能造成：
+
+- 竄改網頁內容。
+- 假冒登入表單，誘騙使用者輸入資料。
+- 以使用者身分執行未授權操作。
+- 竊取JavaScript可存取的敏感資料。
+
+因此，任何輸入的字串，都不應該解析為HTML：不要用 `innerHTML` 來接，除非你能有把握處理衍生問題。
+
+### 不安全的寫法
+
+```javascript
+const username =
+  document.querySelector("#username").value;
+
+document.querySelector("#result").innerHTML =
+  `Hello, ${username}`;
+```
+
+如果輸入：
+
+```html
+<img src=x onerror=alert('XSS')>
+```
+
+`innerHTML`會將輸入解析為HTML，可能觸發惡意事件。
+
+### 安全的寫法
+
+```javascript
+document.querySelector("#result").textContent =
+  `Hello, ${username}`;
+```
+
+`textContent`會將輸入視為純文字，不會解析成HTML或執行其中的事件處理程式。
+
+### innerHTML vs. textContent
+
+| 屬性          | 行為                 | 安全性                    |
+| ------------- | -------------------- | ------------------------- |
+| `innerHTML`   | 將字串解析成HTML     | 插入不可信內容時有XSS風險 |
+| `textContent` | 將字串視為純文字     | 適合顯示使用者輸入        |
+| `value`       | 取得或設定表單欄位值 | 不會自行將字串解析為HTML  |
+
+注意：`innerHTML`並非一律禁止，但不應直接插入未經安全處理的使用者資料。若必須呈現使用者提供的HTML，應使用可靠的HTML Sanitizer。
+
+## 6. AI Coding實作練習
+
+### Task 1：建立表單
+
+Prompt：
+
+> 使用HTML、CSS、JavaScript建立會員註冊表單，包含姓名、Email、密碼與送出按鈕。不使用React。HTML、CSS、JS分成三個檔案。
+
+### Task 2：加入驗證
+
+Prompt：
+
+> 在現有表單加入前端驗證：姓名至少2字元、Email格式正確、密碼至少8字元。驗證失敗時在對應欄位下方顯示錯誤訊息，不使用alert。
+
+### Task 3：檢查XSS
+
+Prompt：
+
+> 檢查目前JavaScript是否存在XSS風險，特別是innerHTML與使用者輸入。請指出危險程式碼，解釋原因，並改用安全的DOM操作方式。
+
+### Task 4：理解前後端安全責任
+
+Prompt：
+
+> 如果使用者繞過HTML required及JavaScript驗證，直接使用curl送出不合法資料到FastAPI，會發生什麼？應如何使用Pydantic在後端再次驗證？
+
+## 7. 本週應理解的重點
+
+1. HTML負責表單結構與基本驗證。
+2. JavaScript負責事件處理、自訂驗證與DOM更新。
+3. `preventDefault()`可阻止表單預設提交。
+4. XSS的核心風險是將不可信資料當成可執行內容。
+5. 顯示純文字時，優先使用`textContent`。
+6. 前端驗證改善UX，後端驗證才是資料安全的必要防線。
+
+
+- **為什麼 HTML 已有 required，還要 JS 驗證？**  
+  HTML 易被改 DOM 跳過、訊息死板；JS 可 trim、自訂欄位下錯誤、`preventDefault`。兩者都不取代後端。
+
+- **`innerHTML` 與 `textContent` 差在哪？**  
+  `innerHTML`＝當 HTML 解析（可能 XSS）；`textContent`＝純文字。顯示使用者／API 字用後者。
+
+- **為什麼前端驗證不能取代後端？**  
+  可直接 curl／fetch 打 API，不跑你的網頁。寫入 DB 的規則後端一定要再驗。
+
+- **後端驗證過就一定不會 XSS？**  
+  不一定。後端多管格式／長度；若再用 `innerHTML` 顯示已存字串，仍可能 XSS。
+
+- **AI 程式怎麼查 XSS？**  
+  搜 `innerHTML`／拼 HTML；來源是否使用者輸入；改 `textContent`；用怪字串實測。
+
+## 9. 足弓實作筆記位置
+
+個人設定完整問答在 [`docs/ai.md` 的 W08](ai.md)。
+
+---
+ 
+
+# W09 — OAuth、使用者登入與token {#JWT}
+- OAuth 2.0 Login：了解第三方登入的運作與優缺點
+- JWT？伺服器「記得」卻不存session，登入防弊
 
 ---
 
