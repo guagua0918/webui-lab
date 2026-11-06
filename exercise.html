@@ -11,7 +11,7 @@
     <header class="topbar">
       <div>
         <p class="brand">足弓小幫手</p>
-        <p class="brand-sub">矯正運動回饋</p>
+        <p class="brand-sub">矯正運動教學</p>
       </div>
       <div class="account" id="account">
         <a class="account-link" id="account-login" href="api/auth/google/login">登入</a>
@@ -31,28 +31,40 @@
       </div>
     </header>
 
-    <main class="content">
-      <h1 class="page-title">矯正運動</h1>
-      <p class="lead">今日菜單：雙腳提踵 × 3 組</p>
+    <main class="content" id="exercise-root">
+      <section id="view-search">
+        <h1 class="page-title">運動教學</h1>
+        <p class="lead" id="exercise-lead">  </p>
 
-      <article class="card">
-        <h2>提踵練習</h2>
-        <ol class="list">
-          <li>小腿與腳跟貼上標記</li>
-          <li>手機置於後方／內側穩定拍攝</li>
-          <li>依角度提示調整，避免過度外翻</li>
-        </ol>
-        <p><span class="status">示意 3° · 安全</span><span class="status status-warn">示意近 10° · 調整</span></p>
-        <a class="btn btn-primary" href="exercise">開始提踵（示意）</a>
-      </article>
+        <form id="search-form" class="search-form" autocomplete="off">
+          <label class="field-label" for="search-q">搜尋動作</label>
+          <div class="suggest-wrap">
+            <input
+              id="search-q"
+              name="q"
+              type="search"
+              class="field-input"
+              placeholder="例如：短足、提踵、伸展…"
+              aria-autocomplete="list"
+              aria-controls="suggest-list"
+              aria-expanded="false"
+            >
+            <ul id="suggest-list" class="suggest-list" role="listbox" hidden></ul>
+          </div>
 
-      <article class="card">
-        <h2>本次摘要（示意）</h2>
-        <div class="meta-row"><span>最大角度</span><strong>8°</strong></div>
-        <div class="meta-row"><span>平均角度</span><strong>4°</strong></div>
-        <div class="meta-row"><span>超標時間</span><strong>12%</strong></div>
-        <a class="btn btn-ghost" href="menu">調整運動菜單</a>
-      </article>
+          <div class="filter-grid" id="filter-grid"></div>
+
+          <div class="search-actions">
+            <button type="submit" class="btn btn-primary">搜尋</button>
+            <button type="button" class="btn btn-ghost" id="search-reset">清除條件</button>
+          </div>
+        </form>
+
+        <p class="ex-meta" id="result-count" hidden></p>
+        <div id="exercise-list"></div>
+      </section>
+
+      <section id="view-detail" hidden></section>
     </main>
 
     <nav class="bottom-nav" aria-label="主要導覽">
@@ -63,5 +75,6 @@
   </div>
   <script src="js/auth.js"></script>
   <script src="js/nav.js"></script>
+  <script src="js/exercise.js"></script>
 </body>
 </html>
