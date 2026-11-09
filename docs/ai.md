@@ -375,3 +375,46 @@ display_name 自訂；name/email/picture 仍屬 Google
 
 ---
 
+# W09
+## 1. 本週 Project Goal
+搞清楚 Authentication（你是誰）跟 Authorization（你能看什麼）：已登入不等于可以改 URL 參數看別人的資料。
+
+## 2. 本週完成
+- [x] 延續 Google OAuth＋本系統 JWT cookie；受保護 API 用 `get_current_member`
+- [x] 掃描足印查詢／預覽／確認以 JWT 的 `mid` 過濾，不單信路徑上的 `fid`
+
+## 3. 問 AI 的重要問題
+- [x] Q1 把 API 的參數改成別人的，為什麼看不到？
+
+### Q1
+- Prompt:
+學生已經登入，把 API 路徑上的 id（例如別人的足印 `fid`）改掉，為什麼不應該看得到別人的資料？
+- AI 建議摘要:
+登入只做 **Authentication**（確認你是誰、JWT 有效）。能不能看某一筆資料是 **Authorization**：後端要用 token 裡的會員身分去查，SQL 帶上 `mid`（或同等擁有者條件），不能只信任 URL 裡的數字。使用者改參數若仍只 `WHERE fid = %s`、不比對擁有者，就會變成越權。正確做法是 `WHERE fid = %s AND mid = %s`；對不到就 404／403，前端改網址也沒用。
+- 我驗證的方法:
+`GET /api/scan/footprints/{fid}` 走 `get_footprint(fid, member["id"])`；別人的 `fid` 對自己的 `mid` 查不到就 404。教學目錄的 `cid`／`oid` 是共用教材、不是「別人的私有成績」，登入後大家看得到同一份屬正常；私有資料要以掃描這類有 `mid` 的資源為準。
+- 最後我採用 / 修改 / 拒絕了什麼:
+採用「JWT 認人＋查詢綁 mid」；拒絕「有登入就可以用任意 id 讀資料」。
+
+## 4. Web Concept of the Week
+```text
+Authentication：你是誰（OAuth → 本系統 JWT）
+Authorization：這筆資料是不是你的（SQL 用 mid，不只信 URL）
+改參數 ≠ 越權成功；後端沒檢查才會漏
+```
+
+## 5. Debugging Record
+- Problem: 容易以為「有登入＝什麼 id 都能打」
+- Root cause: 搞混身分驗證與資源授權
+- Fix: 對私有資源一律用 current member 再查
+
+## 6. Security Check
+- 受保護路由要 JWT；私有列要 `mid` 條件
+- 404 可比 403 少洩漏「這筆 id 存在但不是你的」（實務常見）
+
+## 7. Reflection (反思)
+W09 這題重點：通行證證明身份，不自動等於資料存取權。
+- 下次: 若 notes 也變個人化，同樣要綁 mid，不能只信 note id。
+
+---
+
