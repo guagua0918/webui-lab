@@ -11,6 +11,12 @@
   const viewSearch = document.getElementById("view-search");
   const viewDetail = document.getElementById("view-detail");
   const resetBtn = document.getElementById("search-reset");
+  const pager = document.getElementById("pager");
+  const pagerInfo = document.getElementById("pager-info");
+  const pagePrev = document.getElementById("page-prev");
+  const pageNext = document.getElementById("page-next");
+
+  const PAGE_SIZE = 5;
 
   /** @type {{ cid: number, name: string }} */
   let catalog = null;
@@ -18,6 +24,8 @@
   let filterGroups = [];
   /** @type {Array<{ oid: number, title: string, des: string, class: string }>} */
   let allItems = [];
+  let currentPage = 1;
+  let totalPages = 1;
   let suggestTimer = null;
   let activeSuggest = -1;
   let suggestions = [];
@@ -188,7 +196,7 @@
     } else {
       qInput.value = item.value;
     }
-    runSearch();
+    searchFromFirstPage();
   }
 
   function renderFilters(groups) {
@@ -218,7 +226,7 @@
       });
 
       select.addEventListener("change", function () {
-        runSearch();
+        searchFromFirstPage();
       });
 
       const wrap = document.createElement("div");
@@ -283,6 +291,14 @@
     });
   }
 
+  function objectlistUrl(cid, q, page, size) {
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    params.set("page", String(page));
+    params.set("size", String(size));
+    return "api/objectlist/cid/" + cid + "?" + params.toString();
+  }
+
   function intersectByOid(lists) {
     if (!lists.length) return [];
     let map = new Map();
@@ -302,39 +318,57 @@
     return Array.from(map.values());
   }
 
-  function filterByKeyword(items, q) {
-    const needle = (q || "").trim().toLowerCase();
-    if (!needle) return items;
-    return items.filter(function (item) {
-      const title = (item.title || "").toLowerCase();
-      const des = (item.des || "").toLowerCase();
-      return title.indexOf(needle) >= 0 || des.indexOf(needle) >= 0;
-    });
+  function renderPager(page, pages, total) {
+    totalPages = Math.max(1, pages || 1);
+    currentPage = page || 1;
+    if (total <= PAGE_SIZE && currentPage === 1) {
+      pager.hidden = true;
+      return;
+    }
+    pager.hidden = false;
+    pagerInfo.textContent = "第 " + currentPage + " / " + totalPages + " 頁";
+    pagePrev.disabled = currentPage <= 1;
+    pageNext.disabled = currentPage >= totalPages;
   }
 
   async function runSearch() {
     hideSuggest();
     showSearch();
     try {
+      const q = qInput.value.trim();
       const cids = selectedCids();
-      let items;
-      if (!cids.length) {
-        items = allItems.slice();
-      } else {
-        const lists = await Promise.all(
-          cids.map(function (cid) {
-            return api("api/objectlist/cid/" + cid);
-          })
-        );
-        items = intersectByOid(lists);
+
+      // W09：0 或 1 個目錄 → 後端 ILIKE + 分頁；多目錄仍先交集（資料少）
+      if (cids.length <= 1) {
+        const cid = cids.length === 1 ? cids[0] : catalog.cid;
+        const data = await api(objectlistUrl(cid, q, currentPage, PAGE_SIZE));
+        renderResults(data.items);
+        resultCount.textContent =
+          "共 " + data.total + " 個動作（每頁 " + data.size + "）";
+        renderPager(data.page, data.total_pages, data.total);
+        return;
       }
-      items = filterByKeyword(items, qInput.value);
+
+      const lists = await Promise.all(
+        cids.map(async function (cid) {
+          const data = await api(objectlistUrl(cid, q, 1, 100));
+          return data.items;
+        })
+      );
+      let items = intersectByOid(lists);
       items.sort(function (a, b) {
         return a.oid - b.oid;
       });
-      renderResults(items);
+      const total = items.length;
+      const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+      if (currentPage > pages) currentPage = pages;
+      const start = (currentPage - 1) * PAGE_SIZE;
+      renderResults(items.slice(start, start + PAGE_SIZE));
+      resultCount.textContent = "共 " + total + " 個動作（多條件交集）";
+      renderPager(currentPage, pages, total);
     } catch (error) {
       resultCount.hidden = true;
+      pager.hidden = true;
       exerciseList.replaceChildren();
       const err = document.createElement("p");
       err.className = "muted";
@@ -342,6 +376,11 @@
       exerciseList.append(err);
       console.error(error);
     }
+  }
+
+  function searchFromFirstPage() {
+    currentPage = 1;
+    return runSearch();
   }
 
   async function openDetail(oid) {
@@ -422,7 +461,7 @@
 
   form.addEventListener("submit", function (event) {
     event.preventDefault();
-    runSearch();
+    searchFromFirstPage();
   });
 
   resetBtn.addEventListener("click", function () {
@@ -432,6 +471,18 @@
       if (el) el.value = "";
     });
     hideSuggest();
+    searchFromFirstPage();
+  });
+
+  pagePrev.addEventListener("click", function () {
+    if (currentPage <= 1) return;
+    currentPage -= 1;
+    runSearch();
+  });
+
+  pageNext.addEventListener("click", function () {
+    if (currentPage >= totalPages) return;
+    currentPage += 1;
     runSearch();
   });
 
@@ -500,8 +551,9 @@
   async function boot() {
     try {
       await loadCatalogAndFilters();
-      allItems = await api("api/objectlist/cid/" + catalog.cid);
-      await runSearch();
+      const seed = await api(objectlistUrl(catalog.cid, "", 1, 100));
+      allItems = seed.items;
+      await searchFromFirstPage();
     } catch (error) {
       lead.textContent = error.message || "載入失敗";
       console.error(error);
